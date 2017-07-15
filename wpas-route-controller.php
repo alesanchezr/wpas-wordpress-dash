@@ -11,3 +11,7 @@ License URI: https://en.wikipedia.org/wiki/MIT_License
 Text Domain: wpas
 Domain Path: /languages
 */
+
+require 'src/autoload.php';
+$test = new \WPAS\Controller\WPASController();
+function wpas_is_plugin_active(){}

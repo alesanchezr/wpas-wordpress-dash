@@ -1,10 +1,11 @@
 <?php
 //Define autoloader 
-spl_autoload_register('autoloadWPASBCControllers');
+spl_autoload_register('autoloadWPASController');
 
-function autoloadWPASBCControllers($controller)
+function autoloadWPASController($controller)
 {
+    $basePath = 'wpas/controller/';
     $ce = explode('\\', $controller);
     $className = end($ce);
-    if (in_array('Controller',$ce)) require($className.'.controller.php');
+    if (in_array('Controller',$ce)) require($basePath.$className.'.controller.php');
 }

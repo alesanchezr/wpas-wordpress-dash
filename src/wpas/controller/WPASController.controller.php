@@ -1,34 +1,41 @@
 <?php
 
-require('../../autoload.php');
+namespace WPAS\Controller;
 
-class WPASBCController{
+class WPASController{
     
-    private $ajaxRouts = [];
-    private $routes = [];
+    private static $ajaxRouts = [];
+    private static $routes = [];
     protected static $args = [];
     
     public function __construct(){
         add_action('template_redirect', [$this,'load']);
         add_action( 'wp_enqueue_scripts', [$this,'loadScripts'] );
-        add_action('template_redirect', [$this,'loadFooter'],3,10);
     }
     
-    public function route($view, $controller){
-        $this->routes[$view] = $controller;
-    }
-    
-    public function routeAjax($view, $controller, $method){
+    public function route($args){
         
-        if(!isset($this->ajaxRouts[$view])) $this->ajaxRouts[$view] = [];
-        $this->ajaxRouts[$view][$controller] = $method;
+        $view = $args['view'];
+        $controller = $args['controller'];
+        
+        self::$routes[$view] = $controller;
+    }
+    
+    public function routeAjax($args){
+        
+        $view = $args['view'];
+        $controller = $args['controller'];
+        $action = $args['ajax_action'];
+        
+        if(!isset(self::$ajaxRouts[$view])) self::$ajaxRouts[$view] = [];
+        self::$ajaxRouts[$view][$controller] = $action;
     }
     
     public function loadAjax(){
         
-        foreach($this->ajaxRouts as $view => $routes){
+        foreach(self::$ajaxRouts as $view => $routes){
             foreach($routes as $controller => $method){
-                $controller = 'BreatheCode\\Controller\\'.$controller;
+                $controller = 'WPAS\\Controller\\'.$controller;
                 $v = new $controller();
 
                 $pieces = explode(':',$method);
@@ -49,7 +56,7 @@ class WPASBCController{
     }
     
     public function load(){
-        foreach($this->routes as $view => $controller){
+        foreach(self::$routes as $view => $controller){
             $viewType = null;
             $viewHierarchy = $this->getViewType($view);
             if(is_array($viewHierarchy)) //it means the original view was something like Category:cars
@@ -60,7 +67,7 @@ class WPASBCController{
             
             if($this->isCurrentView($view,$viewType)){
                 $view = $this->prepareViewName($view);
-                $controller = 'BreatheCode\\Controller\\'.$controller;
+                $controller = 'WPAS\\Controller\\'.$controller;
                 $v = new $controller();
                 if(is_callable([$v,'render'.$view])){
                     self::$args = call_user_func([$v,'render'.$view]);
@@ -75,7 +82,7 @@ class WPASBCController{
     
     public function loadScripts(){
         
-        foreach($this->ajaxRouts as $view => $routes)
+        foreach(self::$ajaxRouts as $view => $routes)
         {
             $view = strtolower($view);
     	    if(is_page($view) || is_singular($view))
@@ -87,21 +94,14 @@ class WPASBCController{
     }
     
     private function loadJSController($view){ 
-        if(is_page(strtolower($view)) || is_singular(strtolower($view))){
+        
+        //todo inject ajaxurl into JS
+        if(self::isCurrentView()){
             $view = $this->prepareViewName($view);
-    ?>
-        <script type="text/javascript">
-        	window.onload = function(){
-        		let v = new <?php echo $view ?>Controller({
-        			"ajaxurl": '<?php echo admin_url( 'admin-ajax.php' ); ?>'
-        		});
-        		v.init();
-        	}
-        </script>
-    <?php }
+        }
     }
     
-    public static function getViewData(){
+    public function getViewData(){
         return self::$args;
     }
     
