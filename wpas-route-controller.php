@@ -2,12 +2,12 @@
 /*
 Plugin Name: WPAS WP Route Controller
 Plugin URI:  https://github.com/alesanchezr/wpas-rout-controller
-Description: cd 
-Version:     20160911
-Author:      WordPress.org
-Author URI:  https://developer.wordpress.org/
-License:     GPL2
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: wporg
+Description: A WordPress Plugin for Developers: Controller for easier AJAX Requests and data preloading for any view. 
+Version:     1.0.0
+Author:      Alejandro Sanchez
+Author URI:  https://alesanchezr.com/
+License:     MIT
+License URI: https://en.wikipedia.org/wiki/MIT_License
+Text Domain: wpas
 Domain Path: /languages
 */
