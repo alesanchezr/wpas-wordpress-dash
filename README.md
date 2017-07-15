@@ -5,3 +5,9 @@ Are you a wordpress developer? This plugin is meant to work with AJAX & WordPres
 ```php
 $c->routeAjax('bclogin','Credentials','Public:custom_login');
 ```
+##Author
+
+**Alejandro Sanchez**
+
+  *Repository website:* [https://github.com/alesanchezr/wpas-route-controller](https://github.com/alesanchezr/wpas-route-controller)
+  *About me:* [alesanchezr.com](http://alesanchezr.com)
