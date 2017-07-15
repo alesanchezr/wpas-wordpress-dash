@@ -5,7 +5,7 @@ Are you a wordpress developer? This plugin is meant to work with AJAX & WordPres
 ```php
 $c->routeAjax('bclogin','Credentials','Public:custom_login');
 ```
-## Author
+### Author
 
 **Alejandro Sanchez**
 
