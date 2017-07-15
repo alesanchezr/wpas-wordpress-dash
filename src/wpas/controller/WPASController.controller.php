@@ -31,7 +31,7 @@ class WPASController{
         self::$ajaxRouts[$view][$controller] = $action;
     }
     
-    public function loadAjax(){
+    public static function loadAjax(){
         
         foreach(self::$ajaxRouts as $view => $routes){
             foreach($routes as $controller => $method){
