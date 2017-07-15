@@ -14,4 +14,4 @@ Domain Path: /languages
 
 require 'src/autoload.php';
 $test = new \WPAS\Controller\WPASController();
-function wpas_is_plugin_active(){}
+function is_wpas_controller_active(){}
