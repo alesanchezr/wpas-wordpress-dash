@@ -2,6 +2,8 @@
 
 namespace WPAS\Controller;
 
+use WPAS\Exception\WPASException;
+
 class WPASController{
     
     private static $ajaxRouts = [];
@@ -13,17 +15,23 @@ class WPASController{
         add_action( 'wp_enqueue_scripts', [$this,'loadScripts'] );
     }
     
-    public function route($args){
+    public static function route($args){
         
-        $view = $args['view'];
+        $view = $args['slug'];
         $controller = $args['controller'];
         
         self::$routes[$view] = $controller;
     }
     
-    public function routeAjax($args){
+    public static function routeAjax($args){
         
-        $view = $args['view'];
+        if(!is_array($args)) throw new WPASException('routeAjax is expecting an array');
+        if(!isset($args['slug']) || !isset($args['controller']) || !isset($args['ajax_action'])){
+            print_r($args); die();
+            throw new WPASException('routeAjax args must be view,controller and ajax_action');
+        } 
+        
+        $view = $args['slug'];
         $controller = $args['controller'];
         $action = $args['ajax_action'];
         
@@ -84,8 +92,7 @@ class WPASController{
         
         foreach(self::$ajaxRouts as $view => $routes)
         {
-            $view = strtolower($view);
-    	    if(is_page($view) || is_singular($view))
+    	    if($this->isCurrentView($view))
     	    {
     		    wp_register_script( $view, get_stylesheet_directory_uri().'/assets/js/pages/'.strtolower($view).'.js' , array('ajaxmodule'), $this->prependversion, true );
     		    wp_enqueue_script( $view );

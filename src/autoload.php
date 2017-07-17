@@ -1,11 +1,22 @@
 <?php
 //Define autoloader 
-spl_autoload_register('autoloadWPASController');
+spl_autoload_register('autoloadWPAS');
 
-function autoloadWPASController($controller)
+function autoloadWPAS($controller)
 {
-    $basePath = 'wpas/controller/';
     $ce = explode('\\', $controller);
-    $className = end($ce);
-    if (in_array('Controller',$ce)) require($basePath.$className.'.controller.php');
+    $totalFolders = count($ce);
+
+    if($totalFolders==3)
+    {
+        $className = end($ce);
+        $extension = strtolower($ce[$totalFolders-2]);
+        unset($ce[$totalFolders-1]);
+        $basePath = strtolower(implode('/',$ce) . "/");
+        if (in_array('WPAS',$ce)) 
+        {
+            //echo $basePath.$className.'.'.$extension.'.php'; die();
+            require($basePath.$className.'.'.$extension.'.php');
+        }
+    }
 }

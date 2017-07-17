@@ -1,0 +1,8 @@
+{
+    "name": "wpalesanchezr/wpas-route-controller",
+    "autoload": {
+        "psr-0" : {
+             "WPAS\\" : "src"
+        }
+    }
+}
