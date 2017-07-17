@@ -1,12 +1,10 @@
 <?php
 //Define autoloader 
 spl_autoload_register('autoloadWPAS');
-
 function autoloadWPAS($controller)
 {
     $ce = explode('\\', $controller);
     $totalFolders = count($ce);
-
     if($totalFolders==3)
     {
         $className = end($ce);

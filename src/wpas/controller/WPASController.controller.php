@@ -6,24 +6,32 @@ use WPAS\Exception\WPASException;
 
 class WPASController{
     
-    private static $ajaxRouts = [];
-    private static $routes = [];
-    protected static $args = [];
+    private $ajaxRouts = [];
+    private $routes = [];
+    private $classNamespace = '';
+    protected $args = [];
     
-    public function __construct(){
+    public function __construct($options=[]){
+        
+        $this->loadOptions($options);
+        
         add_action('template_redirect', [$this,'load']);
         add_action( 'wp_enqueue_scripts', [$this,'loadScripts'] );
     }
     
-    public static function route($args){
+    private function loadOptions($options){
+        if(isset($options['namespace']) and $options['namespace']!='') $this->classNamespace = $options['namespace'];
+    }
+    
+    public function route($args){
         
         $view = $args['slug'];
         $controller = $args['controller'];
         
-        self::$routes[$view] = $controller;
+        $this->routes[$view] = $controller;
     }
     
-    public static function routeAjax($args){
+    public function routeAjax($args){
         
         if(!is_array($args)) throw new WPASException('routeAjax is expecting an array');
         if(!isset($args['slug']) || !isset($args['controller']) || !isset($args['ajax_action'])){
@@ -35,15 +43,15 @@ class WPASController{
         $controller = $args['controller'];
         $action = $args['ajax_action'];
         
-        if(!isset(self::$ajaxRouts[$view])) self::$ajaxRouts[$view] = [];
-        self::$ajaxRouts[$view][$controller] = $action;
+        if(!isset($this->ajaxRouts[$view])) $this->ajaxRouts[$view] = [];
+        $this->ajaxRouts[$view][$controller] = $action;
     }
     
-    public static function loadAjax(){
+    public function loadAjax(){
         
-        foreach(self::$ajaxRouts as $view => $routes){
+        foreach($this->ajaxRouts as $view => $routes){
             foreach($routes as $controller => $method){
-                $controller = 'WPAS\\Controller\\'.$controller;
+                $controller = $this->classNamespace.$controller;
                 $v = new $controller();
 
                 $pieces = explode(':',$method);
@@ -64,7 +72,7 @@ class WPASController{
     }
     
     public function load(){
-        foreach(self::$routes as $view => $controller){
+        foreach($this->routes as $view => $controller){
             $viewType = null;
             $viewHierarchy = $this->getViewType($view);
             if(is_array($viewHierarchy)) //it means the original view was something like Category:cars
@@ -78,8 +86,8 @@ class WPASController{
                 $controller = 'WPAS\\Controller\\'.$controller;
                 $v = new $controller();
                 if(is_callable([$v,'render'.$view])){
-                    self::$args = call_user_func([$v,'render'.$view]);
-                    if(is_null(self::$args) && WP_DEBUG) echo '<p style="margin-top:50px;margin-bottom:0px;" class="alert alert-warning">Warning: the render method is returning null!</p>';
+                    $this->args = call_user_func([$v,'render'.$view]);
+                    if(is_null($this->args) && WP_DEBUG) echo '<p style="margin-top:50px;margin-bottom:0px;" class="alert alert-warning">Warning: the render method is returning null!</p>';
                 }
                 else throw new Exception('Render method for view '.$view.' does not exists');
                 return;
@@ -90,7 +98,7 @@ class WPASController{
     
     public function loadScripts(){
         
-        foreach(self::$ajaxRouts as $view => $routes)
+        foreach($this->ajaxRouts as $view => $routes)
         {
     	    if($this->isCurrentView($view))
     	    {
@@ -103,22 +111,22 @@ class WPASController{
     private function loadJSController($view){ 
         
         //todo inject ajaxurl into JS
-        if(self::isCurrentView()){
+        if($this->isCurrentView()){
             $view = $this->prepareViewName($view);
         }
     }
     
     public function getViewData(){
-        return self::$args;
+        return $this->args;
     }
     
-    public static function ajaxSuccess($data){
+    public function ajaxSuccess($data){
         header('Content-type: application/json');
 		echo json_encode([ "code" => 200,"data" => $data ]);
 		die(); 
     }
     
-    public static function ajaxError($message){
+    public function ajaxError($message){
         header('Content-type: application/json');
 		echo json_encode([ "code" => 500, "msg" => $message ]);
 		die(); 
