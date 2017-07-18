@@ -13,5 +13,7 @@ Domain Path: /languages
 */
 
 require 'src/autoload.php';
+
+if(!defined('WPAS_ABS_PATH')) define('WPAS_ABS_PATH', plugin_dir_url( __FILE__ ));
 $test = new \WPAS\Controller\WPASController();
-function is_wpas_controller_active(){}
+function is_wpas_plugin_active(){ return true; }
