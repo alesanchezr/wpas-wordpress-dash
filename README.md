@@ -11,11 +11,22 @@ use \WPAS\Controller\WPASController;
 
 
 $controller = new WPASController([
-    'namespace' => 'Breathecode\\Controller\\'
+    //options
 ]);
 
 $controller->routeAjax([ 'slug' => 'bclogin', 'controller' => 'Credentials', 'ajax_action' => 'Public:custom_login']);     
 ```
+This are the options you can pass to the WPASController
+
+```php
+        $this->options = [
+            'namespace' => '', //The PHP namespace and folders in which your controllers will be located
+            'data' => null, //any data you want to pass to the javascripts
+            'mainscript' => null, //if you want to use the "data" option then you need to specify where is your main javascript
+            'mainscript-requierments' => [] //an array with all the js needed to load before the main script (like jquery, etc.)
+            ];
+```
+
 
 2. **Send error notifications to the user in the wordpress admin:**
 

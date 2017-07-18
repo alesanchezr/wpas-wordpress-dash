@@ -16,7 +16,8 @@ class WPASController{
         $this->options = [
             'namespace' => '',
             'data' => null,
-            'mainscript' => null
+            'mainscript' => null,
+            'mainscript-requierments' => []
             ];
         $this->loadOptions($options);
         
@@ -114,13 +115,13 @@ class WPASController{
         {
     	    if($this->options['mainscript'] && $this->isCurrentView($view))
     	    {
-    		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , ['vendor'], $this->prependversion, true );
+    		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , $this->options['mainscript-requierments'], $this->prependversion, true );
         	    
         	    $data = [];
         	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
                 $data['ajax_url'] = admin_url( 'admin-ajax.php' );
                 $data['wpas_controller'] = $this->prepareControllerName($view);
-                        	    
+        	    
         	    wp_localize_script( 'mainscript', 'WPAS_APP', $data);
     		    wp_enqueue_script( 'mainscript' );
     	    }
