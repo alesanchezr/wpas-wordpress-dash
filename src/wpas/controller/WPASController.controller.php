@@ -115,7 +115,7 @@ class WPASController{
         {
     	    if($this->options['mainscript'] && $this->isCurrentView($view))
     	    {
-    		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , $this->options['mainscript-requierments'], '0.1', true );
+    		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , $this->options['mainscript-requierments'], '0.1' );
         	    
         	    $data = [];
         	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
