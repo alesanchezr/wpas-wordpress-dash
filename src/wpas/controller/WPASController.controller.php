@@ -76,11 +76,11 @@ class WPASController{
                     {
                         $hookName = 'wp_ajax_nopriv_'.$pieces[1];
                     }
-                    if(!is_callable([$v,$methodName])) throw new Exception('Ajax method '.$methodName.' does not exists in controller '.$controller);
+                    if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
                     
                     add_action($hookName, [$v,$methodName]);
                 }
-                else throw new Exception('Ajax rout '.$method.' must be Public or Private');
+                else throw new WPASException('Ajax rout '.$method.' must be Public or Private');
             }
         }
     }
@@ -148,7 +148,7 @@ class WPASController{
         $pieces = explode(':',$view);
         if(count($pieces)==1) return $pieces[0];
         else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
-        else throw new Exception('The view '.$view.' is invalid');
+        else throw new WPASException('The view '.$view.' is invalid');
     }
     
     private function isCurrentView($view, $type='default'){
