@@ -9,6 +9,7 @@ class WPASController{
     private $ajaxRouts = [];
     private $routes = [];
     private $options = [];
+    private $closures = [];
     static protected $args = [];
     
     public function __construct($options=[]){
@@ -23,16 +24,22 @@ class WPASController{
         
         add_action('template_redirect', [$this,'load']);
         add_action( 'wp_enqueue_scripts', [$this,'loadScripts'] );
+        add_action( 'init', [$this,'loadAjax'] );
     
     }
-    
-    public function getCurrentQueue(){
-        
-    }
+    /*
+    function loadAjaxCalls(){
+		if ( is_admin() ) {
+			add_action( 'wp_ajax_nopriv_ajax-example', array( &$this, 'ajax_call' ) );
+			add_action( 'wp_ajax_ajax-example', array( &$this, 'ajax_call' ) );
+		}
+		add_action( 'init', array( &$this, 'init' ) );
+    }*/
     
     private function loadOptions($options){
         foreach($this->options as $key => $val) 
-            if(isset($options[$key])) $this->options[$key] = $options[$key];
+            if(isset($options[$key])) 
+                $this->options[$key] = $options[$key];
     }
     
     public function route($args){
@@ -46,46 +53,74 @@ class WPASController{
     public function routeAjax($args){
         
         if(!is_array($args)) throw new WPASException('routeAjax is expecting an array');
-        if(!isset($args['slug']) || !isset($args['controller']) || !isset($args['ajax_action'])){
-            throw new WPASException('routeAjax args must be view,controller and ajax_action');
+        if(!isset($args['slug']) || !isset($args['controller']) || !isset($args['scope'])){
+            throw new WPASException('routeAjax args must be view,controller and scope');
         } 
         
         $view = $args['slug'];
         $controller = $args['controller'];
-        $action = $args['ajax_action'];
+        $scope = $args['scope'];
         
+        $closureIndex = $controller;
+        if($this->is_closure($controller)){
+            if(!isset($args['action']))  throw new WPASException('Since your controller for '.$view.' is a closure, your need to specify the ajax "action"');
+            $closureIndex = spl_object_hash($controller);
+            $this->closures[$closureIndex] = [
+                'action' => $args['action'],
+                'closure' => $controller
+            ];
+        }
+
         if(!isset($this->ajaxRouts[$view])) $this->ajaxRouts[$view] = [];
-        $this->ajaxRouts[$view][$controller] = $action;
+        $this->ajaxRouts[$view][$closureIndex] = $scope;
     }
     
     public function loadAjax(){
         
         foreach($this->ajaxRouts as $view => $routes){
-            foreach($routes as $controller => $method){
+            foreach($routes as $controller => $scope){
                 $controller = $this->options['namespace'].$controller;
-                $v = new $controller();
 
-                $pieces = explode(':',$method);
-                if(count($pieces)==2)
-                {
-                    $methodName = 'ajax_'.$pieces[1];
-                    
-                    $pieces[0] = strtolower($pieces[0]);
-                    $hookName = 'wp_ajax_'.$pieces[1];
-                    if($pieces[0]=='public') 
-                    {
-                        $hookName = 'wp_ajax_nopriv_'.$pieces[1];
-                    }
-                    if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
-                    
-                    add_action($hookName, [$v,$methodName]);
-                }
-                else throw new WPASException('Ajax rout '.$method.' must be Public or Private');
+                $hookName = 'ajax_';
+                if($scope=='public') $hookName = 'wp_ajax_nopriv_';
+                else if($scope!='public') throw new WPASException('Ajax scope '.$method.' must be Public or Private');
+                
+                $this->executeController($hookName,$controller);
             }
         }
     }
     
+    private function executeController($hookName, $controller){
+        $pieces = explode(':',$controller);
+        if(count($pieces)==2)
+        {
+            $controller = $pieces[0];
+            $methodName .= $pieces[1];
+            
+            $v = $controller();
+            if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
+            
+            add_action($hookName.$methodName, array($v,'$methodName')); 
+        }
+        else if(count($pieces)==1)
+        {
+            if(!$this->is_closure( $this->closures[$controller]['closure'])) throw new WPASException('Ajax method '.$controller.' is not executable or a clousure');
+            $methodName .= $this->closures[$controller]['action'];
+
+            //echo $hookName.$methodName; die();
+            
+            add_action($hookName.$methodName, $this->closures[$controller]['closure']); 
+        }
+        else throw new WPASException('Invalid ajax controller: '.$controller);
+    
+    }
+    
+    private function is_closure($t) {
+        return is_callable($t);
+    }
+    
     public function load(){
+        
         foreach($this->routes as $view => $controller){
             $viewType = 'default';
             $viewHierarchy = $this->getViewType($view);
@@ -115,12 +150,16 @@ class WPASController{
         {
     	    if($this->options['mainscript'] && $this->isCurrentView($view))
     	    {
+    		    wp_register_script( 'wpas_ajax', WPAS_ABS_PATH . 'public/js/ajax.js' , [], '0.1' );
+    		    wp_enqueue_script( 'wpas_ajax' );
+    		    $this->options['mainscript-requierments'][] = 'wpas_ajax';
+    		    
     		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , $this->options['mainscript-requierments'], '0.1' );
         	    
         	    $data = [];
         	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
                 $data['ajax_url'] = admin_url( 'admin-ajax.php' );
-                $data['wpas_controller'] = $this->prepareControllerName($view);
+                $data['action'] = $this->prepareControllerName($view);
         	    
         	    wp_localize_script( 'mainscript', 'WPAS_APP', $data);
     		    wp_enqueue_script( 'mainscript' );
@@ -135,13 +174,13 @@ class WPASController{
     public function ajaxSuccess($data){
         header('Content-type: application/json');
 		echo json_encode([ "code" => 200,"data" => $data ]);
-		die(); 
+		wp_die(); 
     }
     
     public function ajaxError($message){
         header('Content-type: application/json');
 		echo json_encode([ "code" => 500, "msg" => $message ]);
-		die(); 
+		wp_die(); 
     }
     
     private function getViewType($view){
