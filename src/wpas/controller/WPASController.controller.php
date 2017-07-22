@@ -6,6 +6,9 @@ use WPAS\Exception\WPASException;
 
 class WPASController{
     
+    const PRIVATE_SCOPE = 'wp_ajax_';
+    const PUBLIC_SCOPE = 'wp_ajax_nopriv_';
+    
     private $ajaxRouts = [];
     private $routes = [];
     private $options = [];
@@ -40,6 +43,7 @@ class WPASController{
         foreach($this->options as $key => $val) 
             if(isset($options[$key])) 
                 $this->options[$key] = $options[$key];
+                
     }
     
     public function route($args){
@@ -53,13 +57,15 @@ class WPASController{
     public function routeAjax($args){
         
         if(!is_array($args)) throw new WPASException('routeAjax is expecting an array');
-        if(!isset($args['slug']) || !isset($args['controller']) || !isset($args['scope'])){
-            throw new WPASException('routeAjax args must be view,controller and scope');
+        if(!isset($args['slug']) || !isset($args['controller'])){
+            throw new WPASException('routeAjax is expecting the "slug" and "controller" parameters at least');
         } 
         
         $view = $args['slug'];
         $controller = $args['controller'];
-        $scope = $args['scope'];
+        
+        $scope = 'private';
+        if(isset($args['scope'])) $scope = strtolower($args['scope']);
         
         $closureIndex = $controller;
         if($this->is_closure($controller)){
@@ -81,9 +87,8 @@ class WPASController{
             foreach($routes as $controller => $scope){
                 $controller = $this->options['namespace'].$controller;
 
-                $hookName = 'ajax_';
-                if($scope=='public') $hookName = 'wp_ajax_nopriv_';
-                else if($scope!='public') throw new WPASException('Ajax scope '.$method.' must be Public or Private');
+                $hookName = self::PRIVATE_SCOPE;
+                if($scope=='public') $hookName = self::PUBLIC_SCOPE;
                 
                 $this->executeController($hookName,$controller);
             }
@@ -100,16 +105,19 @@ class WPASController{
             $v = $controller();
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
             
-            add_action($hookName.$methodName, array($v,'$methodName')); 
+            add_action($hookName.$methodName, array($v,$methodName)); 
+            
+            //if it is public I should also make available to logged in users
+            if($hookName==self::PUBLIC_SCOPE) add_action(self::PRIVATE_SCOPE.$methodName, array($v,$methodName)); 
         }
         else if(count($pieces)==1)
         {
             if(!$this->is_closure( $this->closures[$controller]['closure'])) throw new WPASException('Ajax method '.$controller.' is not executable or a clousure');
             $methodName .= $this->closures[$controller]['action'];
 
-            //echo $hookName.$methodName; die();
-            
-            add_action($hookName.$methodName, $this->closures[$controller]['closure']); 
+            add_action($hookName.$methodName, $this->closures[$controller]['closure']);
+            //if it is public I should also make available to logged in users
+            if($hookName==self::PUBLIC_SCOPE) add_action(self::PRIVATE_SCOPE.$methodName, $this->closures[$controller]['closure']); 
         }
         else throw new WPASException('Invalid ajax controller: '.$controller);
     
