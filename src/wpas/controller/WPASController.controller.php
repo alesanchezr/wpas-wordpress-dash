@@ -102,7 +102,7 @@ class WPASController{
             $controller = $pieces[0];
             $methodName .= $pieces[1];
             
-            $v = $controller();
+            $v = new $controller();
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
             
             add_action($hookName.$methodName, array($v,$methodName)); 
