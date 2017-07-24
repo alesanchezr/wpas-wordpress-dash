@@ -1,5 +1,5 @@
 {
-    "name": "wpalesanchezr/wpas-route-controller",
+    "name": "alesanchezr/wpas-wordpress-dash",
     "autoload": {
         "psr-0" : {
              "WPAS\\" : "src"
