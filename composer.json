@@ -1,8 +1,9 @@
 {
-    "name": "alesanchezr/wpas-wordpress-dash",
-    "autoload": {
-        "psr-0" : {
-             "wpas" : "src"
+    "autoload":
+    {
+        "psr-0":
+        {
+            "WPAS": "src"
         }
     }
 }
