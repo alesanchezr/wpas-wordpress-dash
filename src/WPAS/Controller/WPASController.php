@@ -13,10 +13,11 @@ class WPASController{
     private $routes = [];
     private $options = [];
     private $closures = [];
+    
+    public static $ajaxController = null;
     static protected $args = [];
     
     public function __construct($options=[]){
-        
         $this->options = [
             'namespace' => '',
             'data' => null,
@@ -82,7 +83,7 @@ class WPASController{
     }
     
     public function loadAjax(){
-        
+
         foreach($this->ajaxRouts as $view => $routes){
             foreach($routes as $controller => $scope){
                 $controller = $this->options['namespace'].$controller;
@@ -99,9 +100,10 @@ class WPASController{
         $pieces = explode(':',$controller);
         if(count($pieces)==2)
         {
-            $controller = $pieces[0];
+            $controller = '\\'.$pieces[0];
             $methodName .= $pieces[1];
             
+            if(!class_exists($controller))  throw new WPASException('Controller Class '.$controller.' does not exists');
             $v = new $controller();
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
             
@@ -128,6 +130,8 @@ class WPASController{
     }
     
     public function load(){
+
+        $this->loadAjaxController();
         
         foreach($this->routes as $view => $controller){
             $viewType = 'default';
@@ -153,7 +157,7 @@ class WPASController{
     }
     
     public function loadScripts(){
-        
+
         foreach($this->ajaxRouts as $view => $routes)
         {
     	    if($this->options['mainscript'] && $this->isCurrentView($view))
@@ -173,6 +177,26 @@ class WPASController{
     		    wp_enqueue_script( 'mainscript' );
     	    }
         }
+    }
+    
+    public function loadAjaxController(){
+        foreach($this->ajaxRouts as $view => $routes)
+        {
+            $viewType = 'default';
+            $viewHierarchy = $this->getViewType($view);
+            if(is_array($viewHierarchy)) //it means the original view was something like Category:cars
+            {
+                $view = $viewHierarchy[1]; //The view
+                $viewType = $viewHierarchy[0]; //The type of the view
+            }
+            if($this->isCurrentView($view,$viewType)){
+                self::$ajaxController = $this->prepareControllerName($view);
+            }
+        }
+    }
+    
+    public static function getAjaxController(){
+        return self::$ajaxController;
     }
     
     public static function getViewData(){

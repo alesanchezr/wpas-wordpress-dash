@@ -4,5 +4,9 @@
         "psr-0":{
             "WPAS": "./src"
         }
+    },
+    "require": {
+        "respect/validation": "^1.1",
+        "twig/twig": "~2.0"
     }
 }
