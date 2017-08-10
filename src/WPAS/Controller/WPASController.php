@@ -203,6 +203,18 @@ class WPASController{
         return self::$args;
     }
     
+    public static function printError($error){
+        if(!is_a($error,'WP_Error')) return new WPASException('Funciton printErrorTemplate is expecting a WP_Error object');
+
+        if($error->errors['default'])
+        $content = '<div class="text-left"><div class="inner-message alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button><ul>';
+        $messages = $error->get_error_messages();
+        foreach($messages as $msg) $content .= '<li>'.$msg.'</li>';
+        $content .= '</ul></div></div>';
+        
+        return $content;
+    }
+    
     public function ajaxSuccess($data){
         header('Content-type: application/json');
 		echo json_encode([ "code" => 200,"data" => $data ]);
@@ -232,6 +244,9 @@ class WPASController{
             break;
             case "category": 
                 return is_tax($view); 
+            break;
+            case "search": 
+                return is_search(); 
             break;
             
         }
