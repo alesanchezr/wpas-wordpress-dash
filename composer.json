@@ -1,11 +1,22 @@
 {
     "name": "alesanchezr/wpas-wordpress-dash",
+    "type": "library",
+    "description": "WordPress development on steroids",
+    "keywords": ["ajax","controller","roles", "capabilities"],
+    "authors": [
+        {
+            "name": "Alejandro Sanchez",
+            "homepage": "http://alesanchezr.com"
+        }
+    ],
     "autoload":{
         "psr-0":{
             "WPAS": "./src"
         }
     },
+    "license": "MIT",
     "require": {
+        "php": ">=5.3.0",
         "respect/validation": "^1.1"
     }
 }
