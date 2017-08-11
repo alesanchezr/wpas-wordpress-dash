@@ -24,6 +24,7 @@ class WPASThemeSettingsBuilder{
 	private $notice;
 
 	function __construct($args){
+		
 		/*
 		 * @ Needs an array of args to instanciate.
 		 */
@@ -414,10 +415,15 @@ class WPASThemeSettingsBuilder{
 		$key = preg_replace( '/[^a-zA-Z0-9\']/', '_', $key );
 		return rtrim( $key, '_' );
 	}
+	
 	/*
 	 * @ Register Settings
 	 */
     public function theme_settings(){
+    	
+		if(!defined('WPAS_ABS_PATH')) define('WPAS_ABS_PATH', get_home_path().'vendor/alesanchezr/wpas-wordpress-dash');
+		if(!defined('WPAS_DOMAIN')) define('WPAS_DOMAIN', 'default');
+		
     	foreach ( $this->settingFields as $value ) {
     		register_setting( $this->settingsID, $value, array($this, 'sanitize') );
     	}
