@@ -1,69 +1,129 @@
 <?php
 
 namespace WPAS\Roles;
+use WPAS\Exception\WPASException;
 
-class WPASRoleAccessManager {
+class WPASRoleAccessManager{
   
   const PUBLIC_SCOPE = 'wpas_public';
   private $allowedPages = [];
   private $options = [];
+  private $newOptions = [];
   private static $restrictAll = false;
   
   public function __construct($newOptions=[]){
     
-      $options = [
-        'default_visibility' => 'restricted'
-        ];
-    
-      $this->options = array_merge($this->options, $newOptions);
-    
+      $this->getOptions();
       add_action( 'wp', [$this,'redirect'] );
       add_action( 'admin-init', [$this,'redirect_admin'] );
+      //add_action( 'init', [$this,'initialize'] );
   }
   
-  private function initialize(){
+  private function getOptions(){
+      $this->options = [
+        'default_visibility' => 'restricted',
+        'redirect_url' => wp_login_url()
+        ];
     
-    self::$roles = get_editable_roles();
-    print_r(self::$roles); die();
-    
+      foreach($this->newOptions as $key => $value)
+        if(!empty($value)) $this->options[$key] = $value;
+        
   }
   
-  public static function start()
-  {
+  public function allowDefaultAccess($contexts){
+    $this->allow(self::PUBLIC_SCOPE,$contexts);
+  }
+  
+  public function allowAccessFor($role, $contexts){
+    
+    if(!$role) throw new WPASException('Invalid role object');
+    
+    $this->allow($role->getName(),$contexts);
   }
  
-  public function allow($role_name, $slug){
-    $this->allowedPages[$role_name][$slug] = true;
+  private function allow($role, $contexts){
+
+    if($role=='administrator') throw new WPASException('The administrator role can not be restricted');
+    
+    foreach($contexts as $context => $slugs)
+    {
+      if($context == 'parent'){
+          $this->allowedPages[$role]['parent'] = $slugs;
+          
+          $parentSlugs = $this->allowedPages[$slugs->getName()];
+          $auxContext = [];
+          foreach($parentSlugs as $key => $slugs){
+            if(!isset($auxContext[$key])) $auxContext[$key] = [];
+            if($key=='parent') $auxContext[$key] = $slugs;
+            else foreach($slugs as $slug => $bool) $auxContext[$key][] = $slug;
+          }
+          //if(!is_callable([$slugs, 'getName'])) print_r($auxContext); die();
+          //if($role=='teacher') { print_r($auxContext); die(); }
+          $this->allow($role,$auxContext);
+          continue;
+      }
+      else $this->validateContext($context,$slugs);
+      
+      foreach($slugs as $slug)
+      {
+        if(!isset($this->allowedPages[$role])) $this->allowedPages[$role] = [];
+        if(!isset($this->allowedPages[$role][$context])) $this->allowedPages[$role][$context] = [];
+        $this->allowedPages[$role][$context][$slug] = true;
+      }
+    }
+      
+    return true;
+  }
+  
+  private function validateContext($contextName, $slugs){
+    if(!in_array($contextName,['page','post','category','tag','taxonomy'])) throw new WPASException('The context "'.$contextName.'" is invalid');
+    
+    if(!is_array($slugs)) throw new WPASException('The value for the context "'.$contextName.'" needs to be an array');
+    
+    return true;
   }
   
   private function getCurrentViewId(){
 
-    if(is_page() || is_single() || is_home()){
-      global $post; 
-      return $post->post_name;
-    }
-    //else if(is_single()) return 'single';
+    global $post; 
+    if(is_page()) return      ['type'=>'page', 'slug' => $post->post_name];
+    else if(is_singular()) return  ['type'=>'post', 'slug' => $post->post_name];
+    else if(is_category()){
+      $qo = get_queried_object();
+      return  ['type'=>'category', 'slug' => $qo->slug];
+    } 
+    else if(is_tag()){
+      $qo = get_queried_object();
+      return  ['type'=>'tag', 'slug' => $qo->slug];
+    } 
+    else if(is_home()) return      ['type'=>'page', 'slug' => $post->post_name];
     else return null;
   }
   
-  private function isAllowed($role_name){
+  public function isAllowed($role_name, $currentContext=null){
+
     if($role_name==='administrator') return true;
-    
     if($this->is_login_page()) return true;
+    
+    if(!$currentContext) $currentContext = $this->getCurrentViewId();
     if( !isset($this->allowedPages[$role_name]) || 
-        empty($this->allowedPages[$role_name][$this->getCurrentViewId()]))
+        empty($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']]))
           return false;
-    if($this->allowedPages[$role_name][$this->getCurrentViewId()] == true) return true;
+    if($this->allowedPages[$role_name]['parent'] && $this->allowedPages[$role_name]['parent']->getName()=='administrator') return true;
+    if($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']] == true) return true;
   }
   
   
   public function redirect() {
     
+      if(!isset($this->allowedPages[self::PUBLIC_SCOPE])) throw new WPASException('You need to define at least one allowDefaultAccess slug');
+    
       $roleName = $this->getCurrentRole();
 
       if (!$this->isAllowed($roleName)) {
-          wp_redirect( wp_login_url() ); exit();
-      } // if $role_name
+        //echo 'not allowed'; print_r($this->allowedPages); die();
+          wp_redirect( $this->options['redirect_url'] ); exit();
+      }
   }
   
   public function redirect_admin() {
