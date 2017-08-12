@@ -7,22 +7,22 @@ Manage the user access to any page, post, tag or category.
 
 Just declare your roles and what they can access
 ```php
-    use WPAS\Roles\WPASRole;
-    use WPAS\Roles\WPASRoleAccessManager;
-    
-    $manager = new WPASRoleAccessManager();//instanciate the manager
+use WPAS\Roles\WPASRole;
+use WPAS\Roles\WPASRoleAccessManager;
 
-    $manager->allowDefaultAccess([
-        'page'=> ['hello-world'] //set a default public page (or post)
-    ]);
-    
-    //get (or create) the role
-    $student = new WPASRole('subscriber'); 
-    //set the slugs that the role will have access to
-    $manager->allowAccessFor($student,[
-        'page' => ['restricted-page', 'hello-world'],
-        'category' => ['courses']
-    ]);
+$manager = new WPASRoleAccessManager();//instanciate the manager
+
+$manager->allowDefaultAccess([
+    'page'=> ['hello-world'] //set a default public page (or post)
+]);
+
+//get (or create) the role
+$student = new WPASRole('subscriber'); 
+//set the slugs that the role will have access to
+$manager->allowAccessFor($student,[
+    'page' => ['restricted-page', 'hello-world'],
+    'category' => ['courses']
+]);
 ```
 
 ## More complex setup

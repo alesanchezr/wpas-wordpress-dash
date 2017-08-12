@@ -1,24 +1,17 @@
 # WPAS-Wordpress-Dash
 
-Are you a wordpress developer? This plugin has no admin view, is just ment for developers. 
+Are you a WordPress developer? Then you are probably struggling with the same stuff that I use tos truggle every day:
 
-I decided to publish this library that I always use to make WordPress developments (themes/plugins), this plugin will make your life easier, here are some of the perks:
+I decided to publish this library that I always use to make WordPress developments (themes/plugins), here are some of the perks:
 
-1. **Route ajax calls to PHP methods very organized and easy:**
+## [WPASController](./tree/master/src/WPAS/Controller)
+
+class to ROUT AJAX request very easy.
 
 ```php
-use \WPAS\Controller\WPASController;
-
-
-$controller = new WPASController([
-    'mainscript' => 'script.js' //the path to your main js
-    //options
-]);
-
 //for each ajax request you want to make, define one routeAjax call
 $controller->routeAjax([ 
     'slug' => 'bclogin', //the view slug in wich is going to be used
-    'scope' => 'public', // (optional) if the user needs to be signed in
     'action' => 'signup', //a unique name to ID this request
     'controller' => function(){
         //This function will be called to process the request
@@ -27,39 +20,45 @@ $controller->routeAjax([
      }
 ]);     
 ```
-2. Do your ajax call inside the mainscript 
-```js
-        var requestData = { 
-            action: 'signup',
-            //any other params you want to send in the request
-        };
 
-        ajax.post(WPAS_APP.ajax_url,requestData,function(responseData){
-            console.log(responseData);
-        });
-```
+## [WPASAdminNotifier](./tree/master/src/WPAS/Messaging)
 
-###This are the options you can pass when creating the controller
+Send notifications to the admin user very easy
 
 ```php
-        $this->options = [
-            'mainscript' => null, //path to the main js that will handle all JS requests
-            'data' => null, //if you want to append data to the WPAS_APP object available in js
-            'mainscript-requierments' => [], //if the main js requiers any other js to be loaded first
-            'namespace' => '', //if you are using a controller class instrad of a closure (anonimus function)
-            ];
+//To notify an error, add this anywhere you want, on any hooks or class
+WPASAdminNotifier::addTransientMessage(Utils\BCNotification::ERROR,'There has been an error');
+
+//Add this at the end of your functions PHP
+WPASAdminNotifier::loadTransientMessages();
+```
+## [WPASRole](./tree/master/src/WPAS/Roles): 
+
+Add roles to wordpress programatically
+
+```php
+$student = new WPASRole('student');
 ```
 
-## Options
+## [WPASRoleAccessManager](./tree/master/src/WPAS/Roles)
 
-When intanciating a new WPASController you can to specify the following options:
+Control what pages, posts, categories or tags can be accessed by each role
 
-| Option                            | Default   | Description  |
-|-----------------------------------|-----------|----------------------------------------------------------|
-| namespace (required)              | ''        | PHP namespace in which all your controller classes are goign to be declared |
-| data (optional)                   | []        | any data you want to append to the data array |
-| mainscript-requierments (optinal) | ''        | ['script1',] |
-| namespace (optional)              | ''        | PHP namespace in which all your controller classes are goign to be declared |
+```php
+$manager = new WPASRoleAccessManager();//instanciate the manager
+
+    $manager->allowDefaultAccess([
+        'page'=> ['hello-world'] //set a default public page (or post)
+    ]);
+    
+    //get (or create) the role
+    $student = new WPASRole('subscriber'); 
+    //set the slugs that the role will have access to
+    $manager->allowAccessFor($student,[
+        'page' => ['restricted-page', 'hello-world'],
+        'category' => ['courses']
+    ]);
+```
 
 ### Author
 
