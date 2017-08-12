@@ -1,9 +1,5 @@
 # WPAS-Wordpress-Dash
 
-Are you a wordpress developer? This plugin has no admin view, is just ment for developers. 
-
-I decided to publish this library that I always use to make WordPress developments (themes/plugins), this plugin will make your life easier, here are some of the perks:
-
 1. **Route ajax calls to PHP methods very organized and easy:**
 
 ```php
