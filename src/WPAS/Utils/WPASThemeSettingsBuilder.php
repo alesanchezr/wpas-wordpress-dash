@@ -160,9 +160,9 @@ class WPASThemeSettingsBuilder{
 	
 	function wp_theme_settings_add_stylesheet()
 	{
-	  wp_enqueue_style('wp_theme_settings', WPAS_ABS_PATH.'/public/css/wpas-themesettingsbuilder.css');
-	  wp_register_script('wp_theme_settings',WPAS_ABS_PATH . '/public/js/wpas-themesettingsbuilder.js', array('jquery'));
-	  wp_enqueue_script('wp_theme_settings');
+		wp_enqueue_style('wp_theme_settings', $styleSheetDirectory .	'/public/css/wpas-themesettingsbuilder.css');
+		wp_register_script('wp_theme_settings',$styleSheetDirectory .	'/public/js/wpas-themesettingsbuilder.js', array('jquery'));
+		wp_enqueue_script('wp_theme_settings');
 	}
 	/*
 	 * @ Register theme menu.
