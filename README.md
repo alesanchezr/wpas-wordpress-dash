@@ -4,7 +4,7 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 
 I decided to publish this library that I always use to make WordPress developments (themes/plugins), here are some of the perks:
 
-## [WPASController](/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
+## [WPASController](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
 class to ROUT AJAX request very easy.
 
@@ -21,7 +21,7 @@ $controller->routeAjax([
 ]);     
 ```
 
-## [WPASAdminNotifier](/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Messaging)
+## [WPASAdminNotifier](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Messaging)
 
 Send notifications to the admin user very easy
 
@@ -32,7 +32,7 @@ WPASAdminNotifier::addTransientMessage(Utils\BCNotification::ERROR,'There has be
 //Add this at the end of your functions PHP
 WPASAdminNotifier::loadTransientMessages();
 ```
-## [WPASRole](/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Roles): 
+## [WPASRole](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Roles): 
 
 Add roles to wordpress programatically
 
@@ -40,7 +40,7 @@ Add roles to wordpress programatically
 $student = new WPASRole('student');
 ```
 
-## [WPASRoleAccessManager](/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Roles)
+## [WPASRoleAccessManager](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Roles)
 
 Control what pages, posts, categories or tags can be accessed by each role
 
