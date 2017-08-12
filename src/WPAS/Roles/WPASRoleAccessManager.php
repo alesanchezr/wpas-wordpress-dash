@@ -55,6 +55,7 @@ class WPASRoleAccessManager{
           foreach($parentSlugs as $key => $slugs){
             if(!isset($auxContext[$key])) $auxContext[$key] = [];
             if($key=='parent') $auxContext[$key] = $slugs;
+            else if($slugs==='all') $auxContext[$key] = 'all';
             else foreach($slugs as $slug => $bool) $auxContext[$key][] = $slug;
           }
           //if(!is_callable([$slugs, 'getName'])) print_r($auxContext); die();
@@ -64,11 +65,14 @@ class WPASRoleAccessManager{
       }
       else $this->validateContext($context,$slugs);
       
-      foreach($slugs as $slug)
+      if($slugs==='all') $this->allowedPages[$role][$context] = 'all';
+      else foreach($slugs as $slug)
       {
         if(!isset($this->allowedPages[$role])) $this->allowedPages[$role] = [];
         if(!isset($this->allowedPages[$role][$context])) $this->allowedPages[$role][$context] = [];
-        $this->allowedPages[$role][$context][$slug] = true;
+        
+        if($this->allowedPages[$role][$context] === 'all') return true;
+        else $this->allowedPages[$role][$context][$slug] = true;
       }
     }
       
@@ -76,9 +80,9 @@ class WPASRoleAccessManager{
   }
   
   private function validateContext($contextName, $slugs){
-    if(!in_array($contextName,['page','post','category','tag','taxonomy'])) throw new WPASException('The context "'.$contextName.'" is invalid');
+    if(!in_array($contextName,['page','post','category','tag','taxonomy','archive'])) throw new WPASException('The context "'.$contextName.'" is invalid');
     
-    if(!is_array($slugs)) throw new WPASException('The value for the context "'.$contextName.'" needs to be an array');
+    if(!is_array($slugs) && $slugs!='all') throw new WPASException('The value for the context "'.$contextName.'" needs to be an array or the word "all"');
     
     return true;
   }
@@ -96,6 +100,10 @@ class WPASRoleAccessManager{
       $qo = get_queried_object();
       return  ['type'=>'tag', 'slug' => $qo->slug];
     } 
+    else if(is_archive()){
+      $qo = get_queried_object();
+      return  ['type'=>'archive', 'slug' => $qo->slug];
+    } 
     else if(is_home()) return      ['type'=>'page', 'slug' => $post->post_name];
     else return null;
   }
@@ -104,11 +112,12 @@ class WPASRoleAccessManager{
 
     if($role_name==='administrator') return true;
     if($this->is_login_page()) return true;
-    
     if(!$currentContext) $currentContext = $this->getCurrentViewId();
-    if( !isset($this->allowedPages[$role_name]) || 
-        empty($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']]))
-          return false;
+    if( !isset($this->allowedPages[$role_name])) return false;
+    
+    if($this->allowedPages[$role_name][$currentContext['type']] === 'all') return true;
+    else if(empty($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']])) return false;
+    
     if($this->allowedPages[$role_name]['parent'] && $this->allowedPages[$role_name]['parent']->getName()=='administrator') return true;
     if($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']] == true) return true;
   }
@@ -121,7 +130,7 @@ class WPASRoleAccessManager{
       $roleName = $this->getCurrentRole();
 
       if (!$this->isAllowed($roleName)) {
-        //echo 'not allowed'; print_r($this->allowedPages); die();
+          echo 'not allowed'; print_r($this->allowedPages); die();
           wp_redirect( $this->options['redirect_url'] ); exit();
       }
   }
@@ -135,7 +144,7 @@ class WPASRoleAccessManager{
           $roleName = $this->getCurrentRole();
    
           if ( 'subscriber' === $roleName ) {
-              wp_redirect( get_home_url() );
+              wp_redirect( $this->options['redirect_url'] );
           } // if $role_name
    
       } // if DOING_AJAX
