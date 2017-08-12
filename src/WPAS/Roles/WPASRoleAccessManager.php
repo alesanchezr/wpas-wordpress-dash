@@ -130,7 +130,7 @@ class WPASRoleAccessManager{
       $roleName = $this->getCurrentRole();
 
       if (!$this->isAllowed($roleName)) {
-          echo 'not allowed'; print_r($this->allowedPages); die();
+          //echo 'not allowed'; print_r($this->allowedPages); die();
           wp_redirect( $this->options['redirect_url'] ); exit();
       }
   }
