@@ -160,6 +160,7 @@ class WPASThemeSettingsBuilder{
 	
 	function wp_theme_settings_add_stylesheet()
 	{
+		$styleSheetDirectory = get_stylesheet_directory_uri();
 		wp_enqueue_style('wp_theme_settings', $styleSheetDirectory .	'/public/css/wpas-themesettingsbuilder.css');
 		wp_register_script('wp_theme_settings',$styleSheetDirectory .	'/public/js/wpas-themesettingsbuilder.js', array('jquery'));
 		wp_enqueue_script('wp_theme_settings');
