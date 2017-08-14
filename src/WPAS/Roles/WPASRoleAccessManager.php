@@ -13,21 +13,42 @@ class WPASRoleAccessManager{
   
   public function __construct($newOptions=[]){
     
-      $this->getOptions();
+      $this->getOptions($newOptions);
       add_action( 'wp', [$this,'redirect'] );
       add_action( 'admin-init', [$this,'redirect_admin'] );
       //add_action( 'init', [$this,'initialize'] );
+      if(!empty($this->options['private_url'])) add_filter( 'login_redirect', [$this,'login_redirect'], 10, 3 );
   }
   
-  private function getOptions(){
+  private function getOptions($newOptions){
       $this->options = [
         'default_visibility' => 'restricted',
+        'message' => 'The requested URL is restricted',
+        'private_url' => null,
         'redirect_url' => wp_login_url()
         ];
-    
-      foreach($this->newOptions as $key => $value)
+      
+      foreach($newOptions as $key => $value)
         if(!empty($value)) $this->options[$key] = $value;
         
+  }
+  
+  function login_redirect( $redirect_to, $request, $user ) {
+  	//is there a user to check?
+  	if ( isset( $user->roles ) && is_array( $user->roles ) ) {
+  		//check for admins
+  		if ( in_array( 'administrator', $user->roles ) ) {
+  			// redirect them to the default place
+  			return $redirect_to;
+  		} else {
+
+  			if(!empty($this->options['private_url'])) return $this->options['private_url'];
+  			else return home_url();
+  			
+  		}
+  	} else {
+  		return $redirect_to;
+  	}
   }
   
   public function allowDefaultAccess($contexts){
@@ -113,7 +134,14 @@ class WPASRoleAccessManager{
     if($role_name==='administrator') return true;
     if($this->is_login_page()) return true;
     if(!$currentContext) $currentContext = $this->getCurrentViewId();
+    
+    //print_r($role_name); die();
+    
     if( !isset($this->allowedPages[$role_name])) return false;
+    
+    if($role_name=='teacher'){
+      print_r($this->allowedPages[$role_name]);  die();
+    }
     
     if($this->allowedPages[$role_name][$currentContext['type']] === 'all') return true;
     else if(empty($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']])) return false;
@@ -131,7 +159,7 @@ class WPASRoleAccessManager{
 
       if (!$this->isAllowed($roleName)) {
           //echo 'not allowed'; print_r($this->allowedPages); die();
-          wp_redirect( $this->options['redirect_url'] ); exit();
+          wp_redirect( $this->options['redirect_url'] . '?message=' . urlencode($this->options['message']) ); exit();
       }
   }
   
@@ -153,6 +181,9 @@ class WPASRoleAccessManager{
   
   private function getCurrentRole(){
       $user   = wp_get_current_user();
+      $totalRoles = count($user->roles);
+      if($totalRoles>1) throw new WPASException('The WPASRoleAccessManager class does not support multiroles, the user '.$user->name.' has '.$totalRoles);
+      
       return ($user->roles[0]) ? $user->roles[0] : self::PUBLIC_SCOPE;
   }
 
