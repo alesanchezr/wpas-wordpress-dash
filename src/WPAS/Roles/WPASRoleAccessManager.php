@@ -66,22 +66,28 @@ class WPASRoleAccessManager{
 
     if($role=='administrator') throw new WPASException('The administrator role can not be restricted');
     
-    foreach($contexts as $context => $slugs)
+    if(!is_array($contexts) && $contexts!=='all')  throw new WPASException('The roel context must be "all" or an array including all the contexts');
+    else if(!is_array($contexts) && $contexts==='all') $this->allowedPages[$role] = 'all';
+    else foreach($contexts as $context => $slugs)
     {
       if($context == 'parent'){
           $this->allowedPages[$role]['parent'] = $slugs;
           
           $parentSlugs = $this->allowedPages[$slugs->getName()];
           $auxContext = [];
-          foreach($parentSlugs as $key => $slugs){
-            if(!isset($auxContext[$key])) $auxContext[$key] = [];
-            if($key=='parent') $auxContext[$key] = $slugs;
-            else if($slugs==='all') $auxContext[$key] = 'all';
-            else foreach($slugs as $slug => $bool) $auxContext[$key][] = $slug;
+          if($parentSlugs==='all') $this->allow($role,'all');
+          else 
+          {
+            foreach($parentSlugs as $key => $slugs){
+              if(!isset($auxContext[$key])) $auxContext[$key] = [];
+              if($key=='parent') $auxContext[$key] = $slugs;
+              else if($slugs==='all') $auxContext[$key] = 'all';
+              else foreach($slugs as $slug => $bool) $auxContext[$key][] = $slug;
+              //if(!is_callable([$slugs, 'getName'])) print_r($auxContext); die();
+              //if($role=='teacher') { print_r($auxContext); die(); }
+              $this->allow($role,$auxContext);
+            }
           }
-          //if(!is_callable([$slugs, 'getName'])) print_r($auxContext); die();
-          //if($role=='teacher') { print_r($auxContext); die(); }
-          $this->allow($role,$auxContext);
           continue;
       }
       else $this->validateContext($context,$slugs);
@@ -109,44 +115,54 @@ class WPASRoleAccessManager{
   }
   
   private function getCurrentViewId(){
-
+    
     global $post; 
     if(is_page()) return      ['type'=>'page', 'slug' => $post->post_name];
-    else if(is_singular()) return  ['type'=>'post', 'slug' => $post->post_name];
+    else if(is_single()){
+      //echo 'post!'; die();
+      return  ['type'=>'post', 'slug' => $post->post_name];
+    }
+    else if(is_tax()){
+      echo 'taxonomy!'; die();
+      return  ['type'=>'taxonomy', 'slug' => $qo->slug];
+    } 
     else if(is_category()){
+      //echo 'category!'; die();
+    //print_r($this->allowedPages[$role_name]); die();
       $qo = get_queried_object();
       return  ['type'=>'category', 'slug' => $qo->slug];
     } 
     else if(is_tag()){
+      //echo 'tag!'; die();
       $qo = get_queried_object();
       return  ['type'=>'tag', 'slug' => $qo->slug];
     } 
     else if(is_archive()){
+      //echo 'archive!'; die();
       $qo = get_queried_object();
       return  ['type'=>'archive', 'slug' => $qo->slug];
     } 
-    else if(is_home()) return      ['type'=>'page', 'slug' => $post->post_name];
-    else return null;
+    else if(is_home()) return ['type'=>'page', 'slug' => $post->post_name];
+    
+    //echo 'Ending'; die();
+    return null;
   }
   
   public function isAllowed($role_name, $currentContext=null){
 
     if($role_name==='administrator') return true;
     if($this->is_login_page()) return true;
+    if($this->allowedPages[$role_name]==='all') return true;
     if(!$currentContext) $currentContext = $this->getCurrentViewId();
     
-    //print_r($role_name); die();
+    //print_r($this->allowedPages[$role_name]); die();
     
     if( !isset($this->allowedPages[$role_name])) return false;
-    
-    if($role_name=='teacher'){
-      print_r($this->allowedPages[$role_name]);  die();
-    }
     
     if($this->allowedPages[$role_name][$currentContext['type']] === 'all') return true;
     else if(empty($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']])) return false;
     
-    if($this->allowedPages[$role_name]['parent'] && $this->allowedPages[$role_name]['parent']->getName()=='administrator') return true;
+    if(isset($this->allowedPages[$role_name]['parent']) && $this->allowedPages[$role_name]['parent']->getName()=='administrator') return true;
     if($this->allowedPages[$role_name][$currentContext['type']][$currentContext['slug']] == true) return true;
   }
   
