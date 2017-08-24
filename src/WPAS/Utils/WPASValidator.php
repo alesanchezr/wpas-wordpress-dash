@@ -10,6 +10,8 @@ class WPASValidator{
     const NAME = 'name';
     const EMAIL = 'email';
     const URL = 'url';
+    const SLUG = 'slug';
+    const INTEGER = 'integer';
     const DESCRIPTION = 'description';
     const PHONE = 'phone';
     
@@ -75,6 +77,15 @@ class WPASValidator{
                 $validator = new Rules\AllOf(
                     new Rules\Slug(),
                     new Rules\Length(1, 30)
+                );
+                if($validator->validate($value)) $result = $value;
+                
+            break;
+            case self::POINTS:
+                
+                $validator = new Rules\AllOf(
+                    new Rules\IntVal(),
+                    new Rules\Length(0, 255)
                 );
                 if($validator->validate($value)) $result = $value;
                 
