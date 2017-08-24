@@ -70,6 +70,15 @@ class WPASValidator{
                 if($validator->validate($value)) $result = $value;
                 
             break;
+            case self::SLUG:
+                
+                $validator = new Rules\AllOf(
+                    new Rules\Slug(),
+                    new Rules\Length(1, 30)
+                );
+                if($validator->validate($value)) $result = $value;
+                
+            break;
             case self::DESCRIPTION:
                 
                 $validator = new Rules\AllOf(
