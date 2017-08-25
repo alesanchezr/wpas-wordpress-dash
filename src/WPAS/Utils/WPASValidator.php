@@ -15,6 +15,7 @@ class WPASValidator{
     const DESCRIPTION = 'description';
     const PHONE = 'phone';
     
+    
     public static function getErrors(){
         return self::$errors;
     }
