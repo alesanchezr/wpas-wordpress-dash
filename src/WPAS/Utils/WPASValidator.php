@@ -82,7 +82,7 @@ class WPASValidator{
                 if($validator->validate($value)) $result = $value;
                 
             break;
-            case self::POINTS:
+            case self::INTEGER:
                 
                 $validator = new Rules\AllOf(
                     new Rules\IntVal(),
