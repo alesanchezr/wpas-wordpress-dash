@@ -123,7 +123,6 @@ class WPASRoleAccessManager{
       return  ['type'=>'post', 'slug' => $post->post_name];
     }
     else if(is_tax()){
-      echo 'taxonomy!'; die();
       return  ['type'=>'taxonomy', 'slug' => $qo->slug];
     } 
     else if(is_category()){
