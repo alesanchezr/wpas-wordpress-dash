@@ -1,6 +1,6 @@
 <?php
 
-namespace WPAS\Exception;
+namespace WPAS\Utils;
 
 use Exception;
 

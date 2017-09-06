@@ -2,7 +2,7 @@
 
 namespace WPAS\Messaging;
 
-use WPAS\Exception\WPASException;
+use WPAS\Utils\WPASException;
 
 class WPASAdminNotifier{
     

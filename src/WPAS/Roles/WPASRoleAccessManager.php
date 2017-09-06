@@ -1,7 +1,8 @@
 <?php
 
 namespace WPAS\Roles;
-use WPAS\Exception\WPASException;
+use WPAS\Utils\WPASException;
+use WPAS\Utils\TemplateContext;
 
 class WPASRoleAccessManager{
   
@@ -113,46 +114,13 @@ class WPASRoleAccessManager{
     
     return true;
   }
-  
-  private function getCurrentViewId(){
-    
-    global $post; 
-    if(is_page()) return      ['type'=>'page', 'slug' => $post->post_name];
-    else if(is_single()){
-      //echo 'post!'; die();
-      return  ['type'=>'post', 'slug' => $post->post_name];
-    }
-    else if(is_tax()){
-      return  ['type'=>'taxonomy', 'slug' => $qo->slug];
-    } 
-    else if(is_category()){
-      //echo 'category!'; die();
-    //print_r($this->allowedPages[$role_name]); die();
-      $qo = get_queried_object();
-      return  ['type'=>'category', 'slug' => $qo->slug];
-    } 
-    else if(is_tag()){
-      //echo 'tag!'; die();
-      $qo = get_queried_object();
-      return  ['type'=>'tag', 'slug' => $qo->slug];
-    } 
-    else if(is_archive()){
-      //echo 'archive!'; die();
-      $qo = get_queried_object();
-      return  ['type'=>'archive', 'slug' => $qo->slug];
-    } 
-    else if(is_home()) return ['type'=>'page', 'slug' => $post->post_name];
-    
-    //echo 'Ending'; die();
-    return null;
-  }
-  
+
   public function isAllowed($role_name, $currentContext=null){
 
     if($role_name==='administrator') return true;
     if($this->is_login_page()) return true;
     if($this->allowedPages[$role_name]==='all') return true;
-    if(!$currentContext) $currentContext = $this->getCurrentViewId();
+    if(!$currentContext) $currentContext = $this->TemplateContext::getContext();
     
     //print_r($this->allowedPages[$role_name]); die();
     

@@ -16,7 +16,8 @@
     },
     "license": "MIT",
     "require": {
-        "php": ">=5.3.0",
-        "respect/validation": "^1.1"
+        "php": ">=7.0.0",
+        "respect/validation": "^1.1",
+        "jjgrainger/posttypes": "^1.1"
     }
 }

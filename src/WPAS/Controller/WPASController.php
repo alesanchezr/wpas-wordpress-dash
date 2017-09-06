@@ -2,7 +2,7 @@
 
 namespace WPAS\Controller;
 
-use WPAS\Exception\WPASException;
+use WPAS\Utils\WPASException;
 
 class WPASController{
     

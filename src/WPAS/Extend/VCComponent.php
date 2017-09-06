@@ -2,7 +2,7 @@
 
 namespace WPAS\Extend;
 
-use WPAS\Exception;
+use WPAS\Utils;
 
 class VCComponent implements VCComponentInterface{
     
