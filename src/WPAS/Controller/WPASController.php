@@ -2,7 +2,10 @@
 
 namespace WPAS\Controller;
 
+require_once('global.php');
+
 use WPAS\Utils\WPASException;
+use WPAS\Utils\TemplateContext;
 
 class WPASController{
     
@@ -57,6 +60,8 @@ class WPASController{
     
     public function routeAjax($args){
         
+        $this->loadControllerCustomHooks();
+        
         if(!is_array($args)) throw new WPASException('routeAjax is expecting an array');
         if(!isset($args['slug']) || !isset($args['controller'])){
             throw new WPASException('routeAjax is expecting the "slug" and "controller" parameters at least');
@@ -98,6 +103,7 @@ class WPASController{
     
     private function executeController($hookName, $controller){
         $pieces = explode(':',$controller);
+        $methodName = '';
         if(count($pieces)==2)
         {
             $controller = '\\'.$pieces[0];
@@ -114,6 +120,9 @@ class WPASController{
         }
         else if(count($pieces)==1)
         {
+            $controller = explode('\\',$controller);
+            if(is_array($controller)) $controller = end($controller);
+            
             if(!$this->is_closure( $this->closures[$controller]['closure'])) throw new WPASException('Ajax method '.$controller.' is not executable or a clousure');
             $methodName .= $this->closures[$controller]['action'];
 
@@ -141,6 +150,7 @@ class WPASController{
                 $view = $viewHierarchy[1]; //The view
                 $viewType = $viewHierarchy[0]; //The type of the view
             }
+            
             if($this->isCurrentView($view,$viewType)){
                 $view = $this->prepareControllerName($view);
                 $controller = $this->options['namespace'].$controller;
@@ -160,21 +170,28 @@ class WPASController{
 
         foreach($this->ajaxRouts as $view => $routes)
         {
-    	    if($this->options['mainscript'] && $this->isCurrentView($view))
+    	    $data = [];
+    	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
+            $data['ajax_url'] = admin_url( 'admin-ajax.php' );
+            $data['view'] = TemplateContext::getContext();
+    	    
+    	    if($this->options['mainscript'])
     	    {
-    		    wp_register_script( 'wpas_ajax', WPAS_ABS_PATH . 'public/js/ajax.js' , [], '0.1' );
-    		    wp_enqueue_script( 'wpas_ajax' );
+                $data['action'] = $this->prepareControllerName($view);
     		    $this->options['mainscript-requierments'][] = 'wpas_ajax';
     		    
     		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , $this->options['mainscript-requierments'], '0.1' );
-        	    
-        	    $data = [];
-        	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
-                $data['ajax_url'] = admin_url( 'admin-ajax.php' );
-                $data['action'] = $this->prepareControllerName($view);
-        	    
         	    wp_localize_script( 'mainscript', 'WPAS_APP', $data);
     		    wp_enqueue_script( 'mainscript' );
+    	    }
+    	    else{
+    	        
+                add_action ( 'wp_head', function() use ($data){ ?>
+                      <script type="text/javascript">
+                        var WPAS_APP = <?php echo json_encode($data, JSON_PRETTY_PRINT); ?>
+                      </script><?php
+                } );
+    	        
     	    }
         }
     }
@@ -195,11 +212,29 @@ class WPASController{
         }
     }
     
+    public function loadControllerCustomHooks(){
+        $userControllers = [];
+        foreach($this->routes as $view => $controller){
+            
+            if(!in_array($controller, $userControllers))
+            {
+                $userControllers[] = $controller;
+                $controller = $this->options['namespace'].$controller;
+                $v = new $controller();
+                if(is_callable([$v,'load_controller_hooks'])){
+                    call_user_func([$v,'load_controller_hooks']);
+                }
+            }
+        }
+    }
+    
     public static function getAjaxController(){
         return self::$ajaxController;
     }
     
     public static function getViewData(){
+        
+        if(empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
         return self::$args;
     }
     
@@ -242,8 +277,38 @@ class WPASController{
             case 'default': 
                 return (is_page($view) || is_singular($view));
             break;
+            case 'single': 
+                return is_singular($view);
+            break;
+            case 'home': 
+                if ( is_front_page() && is_home() ) {
+                  // Default homepage
+                  return true;
+                } elseif ( is_front_page() ) {
+                  // static homepage
+                  return true;
+                } elseif ( is_home() ) {
+                  // blog page
+                  return false;
+                } 
+              return false;
+            break;
+            case 'blog': 
+                if ( is_front_page() && is_home() ) {
+                  // Default homepage
+                  return false;
+                } elseif ( is_front_page() ) {
+                  // static homepage
+                  return false;
+                } elseif ( is_home() ) {
+                  // blog page
+                  return true;
+                } 
+              return false;
+            break;
             case "category": 
-                return is_tax($view); 
+                //if($view=='all') return true;
+                return is_tax($view) || is_category($view); 
             break;
             case "search": 
                 return is_search(); 

@@ -6,7 +6,7 @@ class TemplateContext{
     
     private static $current = null;
     
-    public static function getContext($ready){
+    public static function getContext($ready=null){
         
         if(!empty(self::$current)) return self::$current;
     
@@ -15,10 +15,10 @@ class TemplateContext{
             if(!empty($qo->slug)) self::$current = ['type'=>'page', 'slug' => $qo->slug];
             else if(!empty($qo->post_name)) self::$current = ['type'=>'page', 'slug' => $qo->post_name];
         } 
-        else if(is_single('post')){
+        else if(is_singular('post')){
             self::$current = ['type'=>'post', 'slug' => $qo->post_name];
         }
-        else if(is_single()){
+        else if(is_singular()){
             self::$current = ['type'=>'custom-post', 'slug' => $qo->post_type];
         }
         else if(is_tax()){
@@ -38,6 +38,7 @@ class TemplateContext{
             self::$current = ['type'=>'archive', 'slug' => $qo->slug];
         } 
         else if(is_home()){
+            global $wp_query;
             self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
         } 
         else if(is_attachment()){
@@ -49,7 +50,7 @@ class TemplateContext{
             if(!empty($wp_query->query['pagename'])) self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
             else if(!empty($wp_query->name)) self::$current = ['type'=>'page', 'slug' => $wp_query->name];
         }
-        
+        //print_r(self::$current); die();
         return self::$current;
     }
 }

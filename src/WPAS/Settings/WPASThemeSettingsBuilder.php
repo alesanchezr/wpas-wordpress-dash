@@ -9,10 +9,11 @@
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
-namespace WPAS\Utils;
+namespace WPAS\Settings;
 
 class WPASThemeSettingsBuilder{
 
+	const THEME_OPTIONS_KEY = "wpas_theme_options_";
 	private $tabs;
 	private $currversion = "2.4.5";
 	private $theme;
@@ -158,11 +159,11 @@ class WPASThemeSettingsBuilder{
  		
 	}
 	
-	function wp_theme_settings_add_stylesheet()
-	{
+	function wp_theme_settings_add_stylesheet(){
+		
 		$styleSheetDirectory = get_stylesheet_directory_uri();
-		wp_enqueue_style('wp_theme_settings', $styleSheetDirectory .	'/public/css/wpas-themesettingsbuilder.css');
-		wp_register_script('wp_theme_settings',$styleSheetDirectory .	'/public/js/wpas-themesettingsbuilder.js', array('jquery'));
+		wp_enqueue_style('wp_theme_settings', $styleSheetDirectory .	'/assets/css/wpas-themesettingsbuilder.css');
+		wp_register_script('wp_theme_settings',$styleSheetDirectory .	'/assets/js/wpas-themesettingsbuilder.js', array('jquery'));
 		wp_enqueue_script('wp_theme_settings');
 	}
 	/*
@@ -215,13 +216,19 @@ class WPASThemeSettingsBuilder{
 				echo '<td>';
 					echo $this->binput($data);
 					if (array_key_exists('description', $data)) {
-						echo '<p class="description">'.$data['description'].'</p>';
+						if(is_callable($data['description']))
+						{
+							echo '<p class="description">';
+							call_user_func($data['description']);
+							echo '</p>';
+						}
+						else echo '<p class="description">'.$data['description'].'</p>';
 					}
 				echo '</td>';
 
 			echo '</tr>';
 
-			if($data['type']!='array') array_push($this->settingFields, $data['name']);
+			if($data['type']!='array' && $data['type']!='button') array_push($this->settingFields, $data['name']);
 		}
 
 		do_action('wpts_tab_'.$parent.'_table_after');
@@ -242,6 +249,13 @@ class WPASThemeSettingsBuilder{
 			// Build text
 			case 'text':
 				echo '<input type="text" class="'.$html_class.'" name="'.$array['name'].'" value="'.$this->wpts_option($array['name']).'" />';
+				if (array_key_exists('tooltip', $array)) {
+					echo '<div class="wpts-tooltip">!<span class="wpts-tooltiptext wpts-tooltip-right">'.$array['tooltip'].'</span></div>';
+				}
+				break;
+			// Build text
+			case 'textarea':
+				echo '<textarea class="'.$html_class.'" name="'.$array['name'].'">'.$this->wpts_option($array['name']).'</textarea>';
 				if (array_key_exists('tooltip', $array)) {
 					echo '<div class="wpts-tooltip">!<span class="wpts-tooltiptext wpts-tooltip-right">'.$array['tooltip'].'</span></div>';
 				}
@@ -272,6 +286,10 @@ class WPASThemeSettingsBuilder{
 			// Build Color
 			case 'color':
 				echo '<input type="text" class="'.$html_class.' wpts_color_field" name="'.$array['name'].'" value="'.$this->wpts_option($array['name']).'" />';
+				break;
+			// Build Color
+			case 'button':
+				echo '<input type="button" class="button wpas-settings-button" id="'.$array['id'].'" data-hook="'.$array['id'].'" value="'.$array['label'].'" />';
 				break;
 			// Build Select
 			case 'select':
@@ -448,14 +466,15 @@ class WPASThemeSettingsBuilder{
 	}
 
 	function ajax_theme_option_with_ajax() {
-		$target = $_POST['target'];
-		$value = $_POST['value'];
-		$function = $_POST['function'];
 		
-		$currentOptionValue = get_option( $target );
+		$function = $_POST['function'];
 		switch($function)
 		{
 			case "add":
+				$target = $_POST['target'];
+				$value = $_POST['value'];
+				
+				$currentOptionValue = get_option( $target );
 				if(is_array($currentOptionValue) or is_object($currentOptionValue))
 				{
 					$currentOptionValue[$value] = null;
@@ -463,10 +482,21 @@ class WPASThemeSettingsBuilder{
 				}else update_option($target, array());
 			break;
 			case "delete":
+				$target = $_POST['target'];
+				$value = $_POST['value'];
+				
+				$currentOptionValue = get_option( $target );
 				if(is_array($currentOptionValue) or is_object($currentOptionValue))
 				{
 					unset($currentOptionValue[$value]);
 					update_option($target, $currentOptionValue);
+				}
+			break;
+			case "wpas_do_action":
+				$hookName = null;
+				if(!empty($_POST['hook'])) $hookName = $_POST['hook'];
+				if($hookName){
+					do_action('wpas_settings_button_action',$hookName);
 				}
 			break;
 		}
@@ -479,5 +509,36 @@ class WPASThemeSettingsBuilder{
 		wp_die(); // this is required to terminate immediately and return a proper response
 	}
 	
+	public static function getThemeOption($optKey){
+	    
+		$rawValue = get_option( self::THEME_OPTIONS_KEY.$optKey );
+		
+		return $rawValue;
+	}
+	
+	public static function setThemeOption($optKey, $optValue){
+	    
+		//echo self::THEME_OPTIONS_KEY.$optKey ' - ' $optValue; die();
+		return update_option(self::THEME_OPTIONS_KEY.$optKey, $optValue);
+	}
+	/*
+	public static function setThemeOption($optKey, $optValue){
+	    
+		$currentOptionValue = get_option( self::THEME_OPTIONS_KEY.$optKey );
+		if($currentOptionValue and (is_array($currentOptionValue) or is_object($currentOptionValue)))
+		{
+			$currentOptionValue[$optKey] = $optValue;
+			echo self::THEME_OPTIONS_KEY.$optKey ' - ' $currentOptionValue; die();
+			return update_option(self::THEME_OPTIONS_KEY.$optKey, $currentOptionValue);
+		}
+	}
+	*/
+	/*
+	public static function getThemeOption($optKey){
+	    
+		$rawValue = get_option( self::THEME_OPTIONS_KEY.$optKey );
+		
+		return $rawValue;
+	}*/
 }
 ?>
