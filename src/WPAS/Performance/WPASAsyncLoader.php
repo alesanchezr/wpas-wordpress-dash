@@ -4,6 +4,8 @@ namespace WPAS\Performance;
 use WPAS\Utils\WPASException;
 use WPAS\Utils\TemplateContext;
 
+require_once('global_functions.php');
+
 class WPASAsyncLoader{
     
     private static $manifest = [];
@@ -15,12 +17,17 @@ class WPASAsyncLoader{
     private static $ready = false;
     private static $cacheVersion = '1';
     private static $leaveScriptsAlone = null;
+    private static $insideAdmin = false;
     
     private static $criticalStylesQueue = [];
     
     public function __construct($options=[]){
         
+        self::$insideAdmin = is_admin();
+        
         if(!empty($options['leave-scripts-alone'])) $leaveScriptsAlone = $options['leave-scripts-alone'];
+        
+        if(empty($options['debug'])) $options['debug'] = false;
         
         if(!empty($options['public-url'])){
             self::$publicUrl = $options['public-url'];
@@ -41,8 +48,10 @@ class WPASAsyncLoader{
         }
         if(!empty($options['scripts'])){
             self::$scripts = $options['scripts'];
-            if(empty($options['debug'])) add_action('wp_print_footer_scripts',[$this,'loadScripts']);
-            else  add_action('wp_enqueue_scripts',[$this,'loadDebuggableScripts']);
+            if(!$options['debug']){
+                add_action('wpas_print_footer_scripts',[$this,'loadScripts']);
+            } 
+            else add_action('wp_enqueue_scripts',[$this,'loadDebuggableScripts']);
         }
         if(!empty($options['styles'])){
             self::$styles = $options['styles'];
@@ -50,10 +59,12 @@ class WPASAsyncLoader{
         }
         // load our posts-only PHP
         add_action( "wp", [$this,"is_ready"] );
-    }
+        add_action( 'init', [$this,'remove_previous_styles'], 10 );
+    }            
     
     public function remove_previous_styles(){
-        if (!is_admin() && !$this->is_login_page()) {
+        
+        if (!self::$insideAdmin && !self::is_login_page() && !self::$leaveScriptsAlone) {
           wp_deregister_script('jquery');
           wp_deregister_script( 'wp-embed' ); 
        }
@@ -61,6 +72,13 @@ class WPASAsyncLoader{
     
     public function is_ready(){
         self::$ready = true;
+    }
+    
+    public function is_login_page(){
+        if ( $GLOBALS['pagenow'] === 'wp-login.php' ) {
+            // We're on the login page!
+            return true;
+        }
     }
     
     private function loadManifiest($manifiestObj){
@@ -80,23 +98,29 @@ class WPASAsyncLoader{
         else return $url;
     }
     
+    /**
+     * Minifies the HTML outuput only
+     **/
     private function minifyHTML($buffer){
 
-        $search = array(
-            '/\>[^\S ]+/s',     // strip whitespaces after tags, except space
-            '/[^\S ]+\</s',     // strip whitespaces before tags, except space
-            '/(\s)+/s',         // shorten multiple whitespace sequences
-            '/<!--(.|\s)*?-->/' // Remove HTML comments
-        );
-    
-        $replace = array(
-            '>',
-            '<',
-            '\\1',
-            ''
-        );
-    
-        $buffer = preg_replace($search, $replace, $buffer);
+        if(!self::$insideAdmin)//if im not in the wordpress admin section
+        {
+            $search = array(
+                '/\>[^\S ]+/s',     // strip whitespaces after tags, except space
+                '/[^\S ]+\</s',     // strip whitespaces before tags, except space
+                '/(\s)+/s',         // shorten multiple whitespace sequences
+                '/<!--(.|\s)*?-->/' // Remove HTML comments
+            );
+        
+            $replace = array(
+                '>',
+                '<',
+                '\\1',
+                ''
+            );
+        
+            $buffer = preg_replace($search, $replace, $buffer);
+        }
     
         return $buffer;
     }
@@ -151,11 +175,6 @@ class WPASAsyncLoader{
             $key = self::getMatch($currentPage, self::$scripts);
             if($key){
                 self::printScripts(self::$scripts[$currentPage['type']][$key]);
-            }
-            else{
-                if(self::$leaveScriptsAlone){
-                    add_action( 'init', [$this,'remove_previous_styles'], 10 );
-                }
             }
         }
     }

@@ -190,11 +190,13 @@ class CustomSubmitButton extends \GFAddOn {
     
         // disable sanitization which prevents custom form settings from being saved
         add_filter('gform_disable_form_settings_sanitization', array( $this, 'disable_form_settings_sanitization' ) );
-
+        
+        $styleSheetDirectory = get_stylesheet_directory_uri();
         // enqueue plugin JS
         wp_enqueue_script( 
             'gform-custom-submit-button', 
-            plugin_dir_url( __FILE__ ) . 'js/scripts.js', 
+            $styleSheetDirectory .	'/assets/js/wpas_gravityform.js', 
+            
             array('jquery'), 
             '1.0.0', 
             true 

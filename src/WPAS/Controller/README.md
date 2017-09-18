@@ -1,41 +1,60 @@
-# WPAS-Wordpress-Dash
+# Controller
 
-1. **Route ajax calls to PHP methods very organized and easy:**
-
+1. Setup your routing rules
 ```php
 use \WPAS\Controller\WPASController;
-
-
 $controller = new WPASController([
     'mainscript' => 'script.js' //the path to your main js
     //options
 ]);
 
-//for each ajax request you want to make, define one routeAjax call
-$controller->routeAjax([ 
-    'slug' => 'bclogin', //the view slug in wich is going to be used
-    'scope' => 'public', // (optional) if the user needs to be signed in
-    'action' => 'signup', //a unique name to ID this request
-    'controller' => function(){
-        //This function will be called to process the request
-        //add here any logic you want
-        WPASController::ajaxSuccess($responseData); //send response back to client
-     }
-]);     
+//Using a "Blog" controller class to fetch the information needed for the "news" category
+$controller->route([ 'slug' => 'Category:news', 'controller' => 'Blog']);
+
+//You can also use a closure if you want
+$controller->route([ 'slug' => 'Category:news', 'controller' => function(){
+
+    //here goes the script to fetch for the data
+    $data['variable1'] = 'Hello World';
+    return $data;
+]);
+
+//Using a 'General' controller class to process the 'newsletter_signup' ajax action in 'all' views
+$controller->routeAjax([ 'slug' => 'all', 'controller' => 'General:newsletter_signup' ]);    
 ```
-2. Do your ajax call inside the mainscript 
+
+1. Request all the data you need to render the template using une function
+```php
+
+//This returns a semantic array with everything
+$args = wpas_get_view_data();
+
+echo $data['variable1']; //print the variable that came from the controller
+
+echo $data['wp_query']; //in case you need the Queried Object (default loop) it is available in the 'wp_query' key
+
+```
+
+
+2. Do your ajax call inside any enqueued javascript
 ```js
         var requestData = { 
             action: 'signup',
             //any other params you want to send in the request
+            foo: var
         };
 
-        ajax.post(WPAS_APP.ajax_url,requestData,function(responseData){
-            console.log(responseData);
+        $.ajax({
+            action: 'post',
+            url: WPAS_APP.ajax_url,
+            data: requestData,
+            result: function(responseData){
+                console.log(responseData);
+            }
         });
 ```
 
-###This are the options you can pass when creating the controller
+### This are the options you can pass when creating the controller
 
 ```php
         $this->options = [

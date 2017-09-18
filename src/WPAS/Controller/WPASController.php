@@ -2,7 +2,7 @@
 
 namespace WPAS\Controller;
 
-require_once('global.php');
+require_once('global_functions.php');
 
 use WPAS\Utils\WPASException;
 use WPAS\Utils\TemplateContext;
