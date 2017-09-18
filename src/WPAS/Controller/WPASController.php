@@ -30,8 +30,16 @@ class WPASController{
         $this->loadOptions($options);
         
         add_action('template_redirect', [$this,'load']);
-        add_action( 'wp_enqueue_scripts', [$this,'loadScripts'] );
         add_action( 'init', [$this,'loadAjax'] );
+        
+        add_action ( 'wp_head', function(){ ?>
+            <script type="text/javascript">
+                /* <![CDATA[ */
+                var WPAS_APP = <?php echo json_encode($this->loadJavascriptVariables(), JSON_PRETTY_PRINT); ?>
+                /* ]]> */
+            </script>
+            <?php
+        },2 );
     
     }
     /*
@@ -166,34 +174,16 @@ class WPASController{
         }
     }
     
-    public function loadScripts(){
+    private function loadJavascriptVariables(){
 
-        foreach($this->ajaxRouts as $view => $routes)
-        {
-    	    $data = [];
-    	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
-            $data['ajax_url'] = admin_url( 'admin-ajax.php' );
-            $data['view'] = TemplateContext::getContext();
-    	    
-    	    if($this->options['mainscript'])
-    	    {
-                $data['action'] = $this->prepareControllerName($view);
-    		    $this->options['mainscript-requierments'][] = 'wpas_ajax';
-    		    
-    		    wp_register_script( 'mainscript', get_stylesheet_directory_uri().$this->options['mainscript'] , $this->options['mainscript-requierments'], '0.1' );
-        	    wp_localize_script( 'mainscript', 'WPAS_APP', $data);
-    		    wp_enqueue_script( 'mainscript' );
-    	    }
-    	    else{
-    	        
-                add_action ( 'wp_head', function() use ($data){ ?>
-                      <script type="text/javascript">
-                        var WPAS_APP = <?php echo json_encode($data, JSON_PRETTY_PRINT); ?>
-                      </script><?php
-                } );
-    	        
-    	    }
-        }
+        $context = TemplateContext::getContext();
+	    $data = [];
+	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
+        $data['ajax_url'] = admin_url( 'admin-ajax.php' );
+        $data['view'] = $context;
+        $data['controller'] = self::getAjaxController();
+        
+        return $data;
     }
     
     public function loadAjaxController(){
