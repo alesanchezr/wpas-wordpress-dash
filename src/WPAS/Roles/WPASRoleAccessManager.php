@@ -120,7 +120,7 @@ class WPASRoleAccessManager{
     if($role_name==='administrator') return true;
     if($this->is_login_page()) return true;
     if($this->allowedPages[$role_name]==='all') return true;
-    if(!$currentContext) $currentContext = $this->TemplateContext::getContext();
+    if(!$currentContext) $currentContext = TemplateContext::getContext();
     
     //print_r($this->allowedPages[$role_name]); die();
     
