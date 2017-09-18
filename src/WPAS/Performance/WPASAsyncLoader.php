@@ -13,6 +13,7 @@ class WPASAsyncLoader{
     private static $loadedStyleCount = 0;
     private static $publicUrl = '';
     private static $ready = false;
+    private static $cacheVersion = '1';
     private static $leaveScriptsAlone = null;
     
     private static $criticalStylesQueue = [];
@@ -100,7 +101,6 @@ class WPASAsyncLoader{
         return $buffer;
     }
     
-    
     public static function print_style_tag($path){
         if(self::$loadedStyleCount == 0){
             echo '<script>
@@ -127,7 +127,7 @@ class WPASAsyncLoader{
             
             $key = self::getMatch($currentPage, self::$criticalStyles);
             //print_r(self::$criticalStyles); die();  
-            if($key) self::print_styles(PUBLICPATH.'../'.self::$criticalStyles[$currentPage['type']][$key]);
+            if($key) self::print_styles(self::filter_manifest(self::$criticalStyles[$currentPage['type']][$key]));
         }
         //echo print_r($currentPage); die();
     }
