@@ -222,10 +222,8 @@ class WPASAsyncLoader{
     
     private static function getMatch($currentPage, $hierarchy){
         if(!empty($hierarchy[$currentPage['type']])){
+            if(!empty($hierarchy[$currentPage['type']][$currentPage['slug']])) return $currentPage['slug'];
             if(!empty($hierarchy[$currentPage['type']]['all'])) return 'all';
-            else{
-                if(!empty($hierarchy[$currentPage['type']][$currentPage['slug']])) return $currentPage['slug'];
-            } 
         }else return null;
     }
     
