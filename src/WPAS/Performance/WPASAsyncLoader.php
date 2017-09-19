@@ -59,14 +59,15 @@ class WPASAsyncLoader{
         }
         // load our posts-only PHP
         add_action( "wp", [$this,"is_ready"] );
-        add_action( 'init', [$this,'remove_previous_styles'], 10 );
+        add_action( 'init', [$this,'remove_previous_styles'], 20 );
     }            
     
     public function remove_previous_styles(){
         
         if (!self::$insideAdmin && !self::is_login_page() && !self::$leaveScriptsAlone) {
-          wp_deregister_script('jquery');
-          wp_deregister_script( 'wp-embed' ); 
+            wp_deregister_script('jquery');
+            wp_register_script('jquery', '', '', '', true);     
+            wp_deregister_script( 'wp-embed' ); 
        }
     }
     
@@ -205,6 +206,9 @@ class WPASAsyncLoader{
                 }
                     
             }
+            
+            
+            if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
         }
         
         if(!empty(self::$styles))
@@ -236,6 +240,8 @@ class WPASAsyncLoader{
                 var WPASScriptManger=function(){var e={};return e.single=function(e,n){var t=new XMLHttpRequest;t.open("GET",e),t.addEventListener("load",function(){var e=document.createElement("script");e.type="text/javascript",e.text=t.responseText,document.getElementsByTagName("head")[0].appendChild(e),n&&n()}),t.send()},e.load=function(n){e.single(n[0],function(){void 0!==n[1]&&e.single(n[1])})},e}();
                 window.onload=function(){WPASScriptManger.load('.json_encode($scripts,JSON_UNESCAPED_SLASHES).');};
             </script>';
+        
+        if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
     }
     
     private static function get_file_content($file){
@@ -253,6 +259,100 @@ class WPASAsyncLoader{
             if(!empty($hierarchy[$currentPage['type']][$currentPage['slug']])) return $currentPage['slug'];
             if(!empty($hierarchy[$currentPage['type']]['all'])) return 'all';
         }else return null;
+    }
+    
+    private static function loadGravityFormsOnFooter(){
+        
+        // GF method: http://www.gravityhelp.com/documentation/gravity-forms/extending-gravity-forms/hooks/filters/gform_init_scripts_footer/
+        add_filter( 'gform_init_scripts_footer', '__return_true' );
+    
+        // solution to move remaining JS from https://bjornjohansen.no/load-gravity-forms-js-in-footer
+        
+        add_filter( 'gform_cdata_open', function( $content = '' ) {
+            if ( ( defined('DOING_AJAX') && DOING_AJAX ) || isset( $_POST['gform_ajax'] ) ) {
+                return $content;
+            }
+            $content = 'window.addEventListener("load", function() { console.log("loading gravity forms js"); ';
+            return $content;
+        }, 1 );
+        
+        add_filter( 'gform_cdata_close', function ( $content = '' ) {
+            if ( ( defined('DOING_AJAX') && DOING_AJAX ) || isset( $_POST['gform_ajax'] ) ) {
+            return $content;
+            }
+            $content = ' }, false );';
+            return $content;
+        }, 99 );
+        
+        //deregister all scripts
+        add_action("gform_enqueue_scripts", function (){
+                     //Change this conditional to target whatever page or form you need.
+		    if(!is_admin()) { 
+                        
+                //These are the CSS stylesheets 
+                wp_deregister_style("gforms_formsmain_css"); 	
+                wp_deregister_style("gforms_reset_css");
+                wp_deregister_style("gforms_ready_class_css");
+                wp_deregister_style("gforms_browsers_css");
+                
+                //These are the scripts. 
+                //NOTE: Gravity forms automatically includes only the scripts it needs, so be careful here. 
+                $base_url = \GFCommon::get_base_url();
+                $min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+                
+        		wp_deregister_script('gform_chosen');
+        		wp_register_script( 'gform_chosen', $base_url . '/js/chosen.jquery.min.js', array( 'jquery' ), self::$cacheVersion, true );
+        		
+        		wp_deregister_script('gform_conditional_logic');
+        		wp_register_script( 'gform_conditional_logic', $base_url . "/js/conditional_logic{$min}.js", array( 'jquery', 'gform_gravityforms' ), self::$cacheVersion, true );
+        		
+        		wp_deregister_script('gform_datepicker_init');
+        		wp_register_script( 'gform_datepicker_init', $base_url . "/js/datepicker{$min}.js", array( 'jquery', 'jquery-ui-datepicker', 'gform_gravityforms' ), self::$cacheVersion, true );
+        		
+        		wp_deregister_script('gform_floatmenu');
+        		wp_register_script( 'gform_floatmenu', $base_url . "/js/floatmenu_init{$min}.js", array( 'jquery' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_form_admin');
+        		wp_register_script( 'gform_form_admin', $base_url . "/js/form_admin{$min}.js", array( 'jquery', 'jquery-ui-autocomplete', 'gform_placeholder' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_form_editor');
+        		wp_register_script( 'gform_form_editor', $base_url . "/js/form_editor{$min}.js", array( 'jquery', 'gform_json', 'gform_placeholder' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_forms');
+        		wp_register_script( 'gform_forms', $base_url . "/js/forms{$min}.js", array( 'jquery' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_gravityforms');
+        		wp_register_script( 'gform_gravityforms', $base_url . "/js/gravityforms{$min}.js", array( 'jquery', 'gform_json' ), self::$cacheVersion, true);
+
+        		wp_deregister_script('gform_json');
+        		wp_register_script( 'gform_json', $base_url . '/js/jquery.json.js', array( 'jquery' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_masked_input');
+        		wp_register_script( 'gform_masked_input', $base_url . '/js/jquery.maskedinput.min.js', array( 'jquery' ), self::$cacheVersion , true);
+
+        		wp_deregister_script('gform_menu');
+        		wp_register_script( 'gform_menu', $base_url . "/js/menu{$min}.js", array( 'jquery' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_placeholder');
+        		wp_register_script( 'gform_placeholder', $base_url . '/js/placeholders.jquery.min.js', array( 'jquery' ), self::$cacheVersion , true);
+
+        		wp_deregister_script('gform_tooltip_init');
+        		wp_register_script( 'gform_tooltip_init', $base_url . "/js/tooltip_init{$min}.js", array( 'jquery-ui-tooltip' ), self::$cacheVersion , true);
+
+        		wp_deregister_script('gform_textarea_counter');
+        		wp_register_script( 'gform_textarea_counter', $base_url . '/js/jquery.textareaCounter.plugin.js', array( 'jquery' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_field_filter');
+        		wp_register_script( 'gform_field_filter', $base_url . "/js/gf_field_filter{$min}.js", array( 'jquery', 'gform_datepicker_init' ), self::$cacheVersion, true );
+
+        		wp_deregister_script('gform_shortcode_ui');
+        		wp_register_script( 'gform_shortcode_ui', $base_url . "/js/shortcode-ui{$min}.js", array( 'jquery', 'wp-backbone' ), self::$cacheVersion, true );
+                
+		    }
+		    
+        }, 99);
+        
+
     }
     
 }
