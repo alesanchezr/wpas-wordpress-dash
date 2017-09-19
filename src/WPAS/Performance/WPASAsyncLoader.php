@@ -46,16 +46,16 @@ class WPASAsyncLoader{
             self::$criticalStyles = $options['critical-styles'];
             add_action('wpas_print_critical_styles',[$this,'printCriticalStyles']);
         }
-        if(!empty($options['scripts'])){
-            self::$scripts = $options['scripts'];
-            if(!$options['debug']){
-                add_action('wpas_print_footer_scripts',[$this,'loadScripts']);
-            } 
-            else add_action('wp_enqueue_scripts',[$this,'loadDebuggableScripts']);
-        }
-        if(!empty($options['styles'])){
-            self::$styles = $options['styles'];
-            add_action('wp_print_styles',[$this,'loadStyles']);
+
+        if(!empty($options['scripts'])) self::$scripts = $options['scripts'];
+        if(!empty($options['styles'])) self::$styles = $options['styles'];
+        
+        //If debug=true I load the styles the old way
+        if($options['debug']) add_action('wp_enqueue_scripts',[$this,'loadDebuggableScriptsAndStyles']);
+        else{
+            //If we are not debugging I load the styles the new way
+            add_action('wpas_print_footer_scripts',[$this,'loadScriptsAsync']);
+            add_action('wpas_print_styles',[$this,'loadStylesAsync'], 20);
         }
         // load our posts-only PHP
         add_action( "wp", [$this,"is_ready"] );
@@ -156,7 +156,11 @@ class WPASAsyncLoader{
         //echo print_r($currentPage); die();
     }
     
-    public static function loadStyles(){
+    /**
+     * Loads the non-critical styles asynchronously (how google likes it)
+     * the critical styles are printed inline in another function adn from a separate files
+     **/
+    public static function loadStylesAsync($param){
         
         if(!empty(self::$styles))
         {
@@ -166,7 +170,10 @@ class WPASAsyncLoader{
         }
     }
     
-    public static function loadScripts(){
+    /**
+     * Loads the scripts asynchronously (how google likes it)
+     **/
+    public static function loadScriptsAsync(){
         
         if(!empty(self::$scripts))
         {
@@ -179,12 +186,14 @@ class WPASAsyncLoader{
         }
     }
     
-    public static function loadDebuggableScripts(){
+    /**
+     * Loads the scripts the old traditional way
+     **/
+    public static function loadDebuggableScriptsAndStyles(){
         
+        $currentPage = TemplateContext::getContext(self::$ready);
         if(!empty(self::$scripts))
         {
-            $currentPage = TemplateContext::getContext(self::$ready);
-            //print_r($currentPage); die();
             $key = self::getMatch($currentPage, self::$scripts);
             if($key){
                 $scripts = [];
@@ -194,6 +203,25 @@ class WPASAsyncLoader{
                     wp_enqueue_script( $script, self::filter_manifest($script), $oldScript, '1.0.0', true );
                     $oldScript = [$script];
                 }
+                    
+            }
+        }
+        
+        if(!empty(self::$styles))
+        {
+            $key = self::getMatch($currentPage, self::$styles);
+            if($key){
+                $styles = [];
+                $oldStyle = [];
+                if(is_array(self::$styles[$currentPage['type']][$key])) foreach(self::$styles[$currentPage['type']][$key] as $style) 
+                {
+                    wp_enqueue_style( $style, self::filter_manifest($style), $oldStyle, '1.0.0' );
+                    $oldStyle = [$style];
+                }
+                else{
+                    $style = self::$styles[$currentPage['type']][$key];
+                    wp_enqueue_style( $style, self::filter_manifest($style), null, '1.0.0' );
+                } 
                     
             }
         }
