@@ -1,39 +1,67 @@
+NOTICE: This library is still on early development, it was tested in a few websites but I'm still working to make it extremely easy to use and very "WordPress Styled".
+
 # WPAS-Wordpress-Dash
 
-Are you a WordPress developer? Then you are probably struggling with the same stuff that I use tos truggle every day:
+Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day:
 
 I decided to publish this library that I always use to make my WordPress developments (themes/plugins), here are some of the perks:
 
-1. WPASController: Working with ajax now is very simple, and also idea to separate your logic/data from your views (MVC Pattern).
-2. WPASRole: Add WordPress roles programatically.
-3. WPASRoleAccessManager: Restrict Access to particular pages, posts, categories, etc.
-4. PostTypesManager: Create and manage your WordPress custom post types in just a few lines of code.
-5. WPASAsyncLoader: Use this class to hit 100% on the [Google Page Speed test](https://developers.google.com/speed/pagespeed/insights/).
-6. WPASAdminNotifier: Messaging notification system for the WordPress admin user, using the WordPress standards.
-7. WPASGravityForm: Extend the gravity forms functionality with this easy helper.
-8. VCComponent: Create new Visual Composer components for your theme in just 5 lines fo code.
+1. Working with ajax now is very simple.
+2. Separate your logic/data from your views (MVC Pattern).
+2. Add WordPress roles programatically.
+3. Restrict Role Access to particular pages, posts, categories, etc.
+4. Create and manage all your custom post types in just a few lines of code.
+5. Hit 100% on the [Google Page Speed test](https://developers.google.com/speed/pagespeed/insights/).
+6. Messaging notification system for the WordPress admin user, using the WordPress standards.
+8. Create new [Visual Composer](https://vc.wpbakery.com/) components for your theme in just 5 lines fo code.
+7. Extend [Gravity Forms](http://www.gravityforms.com/) functionality.
 
-Here is a breaf explenation of each helper class:
+Here is a breaf explenation of each Helper Class:
 
-## [WPASController](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
+### Working with AJAX
 
-class to ROUT AJAX request very easy.
+Add one MVC-like route for each AJAX request:
 
 ```php
+//Using a 'General' controller class to process the 'newsletter_signup' ajax action in the page with the slug 'contact-us'
+$controller->routeAjax([ 'slug' => 'Page:contact-us', 'controller' => 'General:newsletter_signup' ]);  
 
-//for each ajax request you want to make, define one routeAjax call
-$controller->routeAjax([ 
-    'slug' => 'bclogin', //the view slug in wich is going to be used
-    'action' => 'signup', //a unique name to ID this request
-    'controller' => function(){
-        //This function will be called to process the from-end request
-        //add here any logic you want
-        WPASController::ajaxSuccess($responseData); //send response back to client
-     }
-]);     
+//Instead, you can use a closure if you like
+$controller->routeAjax([ 'slug' => 'Category:news', 'controller' => function(){
+
+    //here goes the script to fetch for the data
+    $data['variable1'] = 'Hello World';
+    return $data;
+]);
 ```
 
-## [WPASAdminNotifier](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Messaging)
+[Continue reading about Working with AJAX](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
+
+### Simple MVC Pattern
+
+Create ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
+
+```php
+//Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
+$controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
+```
+Our Course.php controller will look like this:
+
+```php
+class Course{
+    
+    public function getCourseInfo(){
+        
+        $args = [];
+        $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
+        return $args;
+    }
+    
+}
+```
+[Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
+
+### [WPASAdminNotifier](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Messaging)
 
 Send notifications to the admin user very easy
 
