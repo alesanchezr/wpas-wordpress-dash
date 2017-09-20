@@ -267,22 +267,7 @@ class WPASAsyncLoader{
         add_filter( 'gform_init_scripts_footer', '__return_true' );
     
         // solution to move remaining JS from https://bjornjohansen.no/load-gravity-forms-js-in-footer
-        
-        add_filter( 'gform_cdata_open', function( $content = '' ) {
-            if ( ( defined('DOING_AJAX') && DOING_AJAX ) || isset( $_POST['gform_ajax'] ) ) {
-                return $content;
-            }
-            $content = 'window.addEventListener("load", function() { console.log("loading gravity forms js"); ';
-            return $content;
-        }, 1 );
-        
-        add_filter( 'gform_cdata_close', function ( $content = '' ) {
-            if ( ( defined('DOING_AJAX') && DOING_AJAX ) || isset( $_POST['gform_ajax'] ) ) {
-            return $content;
-            }
-            $content = ' }, false );';
-            return $content;
-        }, 99 );
+
         
         //deregister all scripts
         add_action("gform_enqueue_scripts", function (){
