@@ -42,7 +42,7 @@ class WPASAsyncLoader{
             else throw new Exception('Invalid Manifiest Syntax');
             
             if(!empty($options['minify-html']) && $options['minify-html']===true){
-                if(!WP_DEBUG) ob_start([$this,"minifyHTML"]);
+                if(!defined('UGLIFY_HTML')) ob_start([$this,"minifyHTML"]);
             }
             if(!empty($options['critical-styles'])){
                 self::$criticalStyles = $options['critical-styles'];
