@@ -58,13 +58,6 @@ class WPASController{
                 
     }
     
-    public function route($args){
-        
-        $view = $args['slug'];
-        $controller = $args['controller'];
-        
-        $this->routes[$view] = $controller;
-    }
     
     public function routeAjax($args){
         
@@ -94,7 +87,6 @@ class WPASController{
         if(!isset($this->ajaxRouts[$view])) $this->ajaxRouts[$view] = [];
         $this->ajaxRouts[$view][$closureIndex] = $scope;
     }
-    
     public function loadAjax(){
 
         foreach($this->ajaxRouts as $view => $routes){
@@ -146,6 +138,23 @@ class WPASController{
         return is_callable($t);
     }
     
+    public function route($args){
+        
+        $view = $args['slug'];
+        
+        $controller = $args['controller'];
+        $closureIndex = $controller;
+        if($this->is_closure($controller)){
+            if(!isset($args['action']))  throw new WPASException('Since your controller for '.$view.' is a closure, your need to specify the ajax "action"');
+            $closureIndex = spl_object_hash($controller);
+            $this->closures[$closureIndex] = [
+                'action' => $args['action'],
+                'closure' => $controller
+            ];
+        }
+        
+        $this->routes[$view] = $closureIndex;
+    }
     public function load(){
 
         $this->loadAjaxController();
@@ -161,13 +170,22 @@ class WPASController{
             
             if($this->isCurrentView($view,$viewType)){
                 $view = $this->prepareControllerName($view);
-                $controller = $this->options['namespace'].$controller;
+                
+                $controllerObject = $this->getController($controller);
+                $methodName = 'render'.$view;
+                $className = $controllerObject;
+                if(is_array($className))
+                {
+                    $methodName = $controllerObject[1]; //The view
+                    $className = $controllerObject[0]; //The type of the view
+                }
+                $controller = $this->options['namespace'].$className;
                 $v = new $controller();
-                if(is_callable([$v,'render'.$view])){
-                    self::$args = call_user_func([$v,'render'.$view]);
+                if(is_callable([$v,$methodName])){
+                    self::$args = call_user_func([$v,$methodName]);
                     if(is_null(self::$args) && WP_DEBUG) echo '<p style="margin-top:50px;margin-bottom:0px;" class="alert alert-warning">Warning: the render method is returning null!</p>';
                 }
-                else throw new WPASException('Render method for view '.$view.' does not exists in '.$controller);
+                else throw new WPASException('Method '.$methodName.' for view '.$view.' does not exists in '.$className);
                 return;
             } 
             
@@ -206,10 +224,14 @@ class WPASController{
         $userControllers = [];
         foreach($this->routes as $view => $controller){
             
-            if(!in_array($controller, $userControllers))
+            $controllerObject = $this->getController($controller);
+            $className = $controllerObject;
+            if(is_array($className)) $className = $controllerObject[0]; //The type of the view
+
+            if(!in_array($className, $userControllers))
             {
-                $userControllers[] = $controller;
-                $controller = $this->options['namespace'].$controller;
+                $userControllers[] = $className;
+                $controller = $this->options['namespace'].$className;
                 $v = new $controller();
                 if(is_callable([$v,'load_controller_hooks'])){
                     call_user_func([$v,'load_controller_hooks']);
@@ -220,12 +242,6 @@ class WPASController{
     
     public static function getAjaxController(){
         return self::$ajaxController;
-    }
-    
-    public static function getViewData(){
-        
-        if(empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
-        return self::$args;
     }
     
     public static function printError($error){
@@ -257,6 +273,13 @@ class WPASController{
         if(count($pieces)==1) return $pieces[0];
         else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
         else throw new WPASException('The view '.$view.' is invalid');
+    }
+    
+    private function getController($controller){
+        $pieces = explode(':',$controller);
+        if(count($pieces)==1) return $pieces[0];
+        else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
+        else throw new WPASException('The controller '.$controller.' is invalid');
     }
     
     private function isCurrentView($view, $type='default'){
@@ -312,4 +335,9 @@ class WPASController{
         return $view;
     }
     
+    public static function getViewData(){
+        
+        if(empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
+        return self::$args;
+    }
 }
