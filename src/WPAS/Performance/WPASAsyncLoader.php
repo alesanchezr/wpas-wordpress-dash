@@ -43,6 +43,7 @@ class WPASAsyncLoader{
             
             if(!empty($options['minify-html']) && $options['minify-html']===true){
                 if(!defined('UGLIFY_HTML')) ob_start([$this,"minifyHTML"]);
+                else if(UGLIFY_HTML) ob_start([$this,"minifyHTML"]);
             }
             if(!empty($options['critical-styles'])){
                 self::$criticalStyles = $options['critical-styles'];
