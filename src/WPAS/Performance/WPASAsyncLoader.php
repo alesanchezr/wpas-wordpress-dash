@@ -25,41 +25,45 @@ class WPASAsyncLoader{
         
         self::$insideAdmin = is_admin();
         
-        if(!empty($options['leave-scripts-alone'])) $leaveScriptsAlone = $options['leave-scripts-alone'];
-        
-        if(empty($options['debug'])) $options['debug'] = false;
-        
-        if(!empty($options['public-url'])){
-            self::$publicUrl = $options['public-url'];
+        if(!self::$insideAdmin)
+        {
+            if(!empty($options['leave-scripts-alone'])) $leaveScriptsAlone = $options['leave-scripts-alone'];
+            
+            if(empty($options['debug'])) $options['debug'] = false;
+            
+            if(!empty($options['public-url'])){
+                self::$publicUrl = $options['public-url'];
+            }
+            if(empty($options['manifest-url'])) $options['manifest-url'] = 'manifest.json';
+            
+            $manifestURL = $options['public-url'].$options['manifest-url'];
+            $jsonManifiest = json_decode($this->get_file_content($manifestURL));
+            if($jsonManifiest) self::$manifest = $this->loadManifiest($jsonManifiest);
+            else throw new Exception('Invalid Manifiest Syntax');
+            
+            if(!empty($options['minify-html']) && $options['minify-html']===true){
+                if(!WP_DEBUG) ob_start([$this,"minifyHTML"]);
+            }
+            if(!empty($options['critical-styles'])){
+                self::$criticalStyles = $options['critical-styles'];
+                add_action('wpas_print_critical_styles',[$this,'printCriticalStyles']);
+            }
+            
+            if(!empty($options['scripts'])) self::$scripts = $options['scripts'];
+            if(!empty($options['styles'])) self::$styles = $options['styles'];
+            
+            //If debug=true I load the styles the old way
+            if($options['debug']) add_action('wp_enqueue_scripts',[$this,'loadDebuggableScriptsAndStyles']);
+            else{
+                //If we are not debugging I load the styles the new way
+                add_action('wpas_print_footer_scripts',[$this,'loadScriptsAsync']);
+                add_action('wpas_print_styles',[$this,'loadStylesAsync'], 20);
+            }
+            // load our posts-only PHP
+            add_action( "wp", [$this,"is_ready"] );
+            add_action( 'init', [$this,'remove_previous_styles'], 20 );
         }
-        if(empty($options['manifest-url'])) $options['manifest-url'] = 'manifest.json';
         
-        $manifestURL = $options['public-url'].$options['manifest-url'];
-        $jsonManifiest = json_decode($this->get_file_content($manifestURL));
-        if($jsonManifiest) self::$manifest = $this->loadManifiest($jsonManifiest);
-        else throw new Exception('Invalid Manifiest Syntax');
-        
-        if(!empty($options['minify-html']) && $options['minify-html']===true){
-            if(!WP_DEBUG) ob_start([$this,"minifyHTML"]);
-        }
-        if(!empty($options['critical-styles'])){
-            self::$criticalStyles = $options['critical-styles'];
-            add_action('wpas_print_critical_styles',[$this,'printCriticalStyles']);
-        }
-
-        if(!empty($options['scripts'])) self::$scripts = $options['scripts'];
-        if(!empty($options['styles'])) self::$styles = $options['styles'];
-        
-        //If debug=true I load the styles the old way
-        if($options['debug']) add_action('wp_enqueue_scripts',[$this,'loadDebuggableScriptsAndStyles']);
-        else{
-            //If we are not debugging I load the styles the new way
-            add_action('wpas_print_footer_scripts',[$this,'loadScriptsAsync']);
-            add_action('wpas_print_styles',[$this,'loadStylesAsync'], 20);
-        }
-        // load our posts-only PHP
-        add_action( "wp", [$this,"is_ready"] );
-        add_action( 'init', [$this,'remove_previous_styles'], 20 );
     }            
     
     public function remove_previous_styles(){
