@@ -178,14 +178,15 @@ class WPASController{
                 {
                     $methodName = $controllerObject[1]; //The view
                     $className = $controllerObject[0]; //The type of the view
-                }
+                }else if($view=='all') throw new WPASException('When using the "all" keyword you have to specify a method in the controler parameter');
+                
                 $controller = $this->options['namespace'].$className;
                 $v = new $controller();
                 if(is_callable([$v,$methodName])){
                     self::$args = call_user_func([$v,$methodName]);
                     if(is_null(self::$args) && WP_DEBUG) echo '<p style="margin-top:50px;margin-bottom:0px;" class="alert alert-warning">Warning: the render method is returning null!</p>';
                 }
-                else throw new WPASException('Method '.$methodName.' for view '.$view.' does not exists in '.$className);
+                else throw new WPASException('Method "'.$methodName.'" for view "'.$view.'" does not exists in '.$className);
                 return;
             } 
             
@@ -318,6 +319,10 @@ class WPASController{
                   return true;
                 } 
               return false;
+            break;
+            case "tag": 
+                if($view=='all') return true;
+                return is_tax($view) || is_tag($view); 
             break;
             case "category": 
                 //if($view=='all') return true;
