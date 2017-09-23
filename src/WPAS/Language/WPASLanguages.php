@@ -13,9 +13,8 @@ class WPASLanguages{
 	
 	function __construct($settings) {
 		
-		//self::$isAdmin = is_admin();
-		self::$isAdmin = false;
-		if(!self::$isAdmin)
+		self::$isAdmin = is_admin();
+		if(self::$isAdmin)
 		{
 			if(!empty($settings['languages-directory'])) 
 				self::$languagesDirectory = $settings['languages-directory'];
