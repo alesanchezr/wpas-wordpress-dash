@@ -19,6 +19,7 @@ class WPASController{
     private $routes = [];
     private $options = [];
     private $closures = [];
+    private $logger = null;
     
     public static $ajaxController = null;
     static protected $args = [];
@@ -27,15 +28,13 @@ class WPASController{
         
         if(WP_DEBUG_LOG)
         {
-            //echo 'logging'; die();
+            //echo 'logging to: '.ABSPATH.'logs/wordpress.log'; die();
             // Create the logger
-            $logger = new Logger('wpas_controller');
+            $this->logger = new Logger('wpas_controller');
             // Now add some handlers
-            $logger->pushHandler(new StreamHandler(ABSPATH.'/logs/wordpress.log', Logger::DEBUG));
-            $logger->pushHandler(new FirePHPHandler());
+            $this->logger->pushHandler(new StreamHandler(ABSPATH.'/logs/wordpress.log', Logger::DEBUG));
+            $this->logger->pushHandler(new FirePHPHandler());
             
-            // You can now use your logger
-            $logger->info('My logger is now ready');
         }
         
         $this->options = [
@@ -131,9 +130,12 @@ class WPASController{
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
             //if($methodName == 'download_syllabus') print("Adding hook: ".$hookName.$methodName); die();
             add_action($hookName.$methodName, array($v,$methodName)); 
-            
+            $this->logger->info('Adding AJAX route '.$hookName.$methodName);
             //if it is public I should also make available to logged in users
-            if($hookName==self::PUBLIC_SCOPE) add_action(self::PRIVATE_SCOPE.$methodName, array($v,$methodName)); 
+            if($hookName==self::PUBLIC_SCOPE){
+                $this->logger->info('Adding AJAX route '.self::PRIVATE_SCOPE.$methodName);
+                add_action(self::PRIVATE_SCOPE.$methodName, array($v,$methodName)); 
+            } 
         }
         else if(count($pieces)==1)
         {
