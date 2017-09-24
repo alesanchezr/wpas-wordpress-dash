@@ -117,6 +117,10 @@ class WPASController{
         }
     }
     
+    private function logInfo($message, $data=[]){
+        if($this->logger) $this->logger->info($message, $data);
+    }
+    
     private function executeController($hookName, $controller){
         $pieces = explode(':',$controller);
         $methodName = '';
@@ -130,10 +134,10 @@ class WPASController{
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
             //if($methodName == 'download_syllabus') print("Adding hook: ".$hookName.$methodName); die();
             add_action($hookName.$methodName, array($v,$methodName)); 
-            $this->logger->info('Adding AJAX route '.$hookName.$methodName);
+            $this->logInfo('Adding AJAX route '.$hookName.$methodName);
             //if it is public I should also make available to logged in users
             if($hookName==self::PUBLIC_SCOPE){
-                $this->logger->info('Adding AJAX route '.self::PRIVATE_SCOPE.$methodName);
+                $this->logInfo('Adding AJAX route '.self::PRIVATE_SCOPE.$methodName);
                 add_action(self::PRIVATE_SCOPE.$methodName, array($v,$methodName)); 
             } 
         }
