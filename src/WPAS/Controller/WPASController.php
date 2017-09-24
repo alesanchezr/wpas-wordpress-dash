@@ -6,6 +6,9 @@ require_once('global_functions.php');
 
 use WPAS\Utils\WPASException;
 use WPAS\Utils\TemplateContext;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+use Monolog\Handler\FirePHPHandler;
 
 class WPASController{
     
@@ -21,6 +24,20 @@ class WPASController{
     static protected $args = [];
     
     public function __construct($options=[]){
+        
+        if(WP_DEBUG_LOG)
+        {
+            //echo 'logging'; die();
+            // Create the logger
+            $logger = new Logger('wpas_controller');
+            // Now add some handlers
+            $logger->pushHandler(new StreamHandler(ABSPATH.'/logs/wordpress.log', Logger::DEBUG));
+            $logger->pushHandler(new FirePHPHandler());
+            
+            // You can now use your logger
+            $logger->info('My logger is now ready');
+        }
+        
         $this->options = [
             'namespace' => '',
             'data' => null,
@@ -112,7 +129,7 @@ class WPASController{
             if(!class_exists($controller))  throw new WPASException('Controller Class '.$controller.' does not exists');
             $v = new $controller();
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
-            
+            //if($methodName == 'download_syllabus') print("Adding hook: ".$hookName.$methodName); die();
             add_action($hookName.$methodName, array($v,$methodName)); 
             
             //if it is public I should also make available to logged in users

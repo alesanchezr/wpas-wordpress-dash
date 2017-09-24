@@ -18,6 +18,7 @@
     "require": {
         "php": ">=7.0.0",
         "respect/validation": "^1.1",
-        "jjgrainger/posttypes": "^1.1"
+        "jjgrainger/posttypes": "^1.1",
+        "monolog/monolog": "^1.23"
     }
 }
