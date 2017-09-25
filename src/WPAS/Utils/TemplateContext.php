@@ -45,6 +45,9 @@ class TemplateContext{
             global $wp_query;
             self::$current = ['type'=>'attachment', 'slug' => $wp_query->name];
         }
+        else if(is_404()){
+            self::$current = ['type'=>'404', 'slug' => 'all'];
+        }
         else{
             global $wp_query;
             if(!empty($wp_query->query['pagename'])) self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
