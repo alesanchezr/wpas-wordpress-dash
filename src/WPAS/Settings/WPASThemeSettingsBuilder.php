@@ -15,7 +15,7 @@ class WPASThemeSettingsBuilder{
 
 	const THEME_OPTIONS_KEY = "wpas_theme_options_";
 	private $tabs;
-	private $currversion = "2.4.5";
+	private $currversion = "2.4.6";
 	private $theme;
 	private $general;
 	private $badge;
