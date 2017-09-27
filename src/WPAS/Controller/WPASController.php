@@ -309,10 +309,15 @@ class WPASController{
     private function isCurrentView($view, $type='default'){
         $type = strtolower($type);
         $view = strtolower($view);
+
         switch($type)
         {
             case 'default': 
                 return (is_page($view) || is_singular($view));
+            break;
+            case 'page':
+                if($view=='all') return is_page();
+                return is_page($view);
             break;
             case 'single': 
                 return is_singular($view);
@@ -344,12 +349,16 @@ class WPASController{
               return false;
             break;
             case "tag": 
-                if($view=='all') return true;
-                return is_tax($view) || is_tag($view); 
+                if($view=='all') return is_tax() || is_tag();
+                else return is_tax($view) || is_tag($view); 
             break;
             case "category": 
-                //if($view=='all') return true;
-                return is_tax($view) || is_category($view); 
+                if($view=='all') return is_tax() || is_category();
+                else return is_tax($view) || is_category($view); 
+            break;
+            case "template":
+                if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
+                return is_page_template($view);
             break;
             case "search": 
                 return is_search(); 
