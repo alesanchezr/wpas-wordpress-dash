@@ -23,11 +23,7 @@ class WPASController{
     
     public function __construct($options=[]){
         
-        if(defined('WP_DEBUG_LOG') && WP_DEBUG_LOG)
-        {
-            if(!defined('ABSPATH')) throw new WPASException('Please declar a ASBPATH constant with your theme directory path');
-            WPASLogger::getLogger('wpas_controller');
-        }
+        WPASLogger::getLogger('wpas_controller');
         
         $this->options = [
             'namespace' => '',
@@ -173,17 +169,10 @@ class WPASController{
         WPASLogger::info('WPASController: INIT');
         $this->loadAjaxController();
         foreach($this->routes as $view => $controller){
-            $viewType = 'default';
-            $viewHierarchy = $this->getViewType($view);
-            if(is_array($viewHierarchy)) //it means the original view was something like Category:cars
-            {
-                $view = $viewHierarchy[1]; //The view
-                $viewType = $viewHierarchy[0]; //The type of the view
-            }
             
-            if(TemplateContext::matchesViewAndType($view,$viewType)){
+            if($pieces = TemplateContext::matchesViewAndType($view)){
                 
-                $view = $this->prepareControllerName($view);
+                $view = $this->prepareControllerName($pieces[1]);
                 
                 $controllerObject = $this->getController($controller);
                 $methodName = 'render'.$view;
@@ -194,7 +183,7 @@ class WPASController{
                     $className = $controllerObject[0]; //The type of the view
                 }else if($view=='all') throw new WPASException('When using the "all" keyword you have to specify a method in the controler parameter');
                 
-                WPASLogger::info('WPASController: match found for [ type => '.$viewType.', view => '.$view.' ] calling: '.$methodName);
+                WPASLogger::info('WPASController: match found for [ type => '.$pieces[0].', view => '.$pieces[1].' ] calling: '.$methodName);
                 $controller = $this->options['namespace'].$className;
                 $v = new $controller();
                 if(is_callable([$v,$methodName])){
@@ -223,15 +212,8 @@ class WPASController{
     public function loadAjaxController(){
         foreach($this->ajaxRouts as $view => $routes)
         {
-            $viewType = 'default';
-            $viewHierarchy = $this->getViewType($view);
-            if(is_array($viewHierarchy)) //it means the original view was something like Category:cars
-            {
-                $view = $viewHierarchy[1]; //The view
-                $viewType = $viewHierarchy[0]; //The type of the view
-            }
-            if(TemplateContext::matchesViewAndType($view,$viewType)){
-                WPASLogger::info('WPASController: match found for [ type => '.$viewType.', view => '.$view.' ]');
+            if($pieces = TemplateContext::matchesViewAndType($view)){
+                WPASLogger::info('WPASController: match found for [ type => '.$pieces[0].', view => '.$pieces[1].' ]');
                 self::$ajaxController = $this->prepareControllerName($view);
             }
         }
@@ -283,13 +265,6 @@ class WPASController{
         header('Content-type: application/json');
 		echo json_encode([ "code" => 500, "msg" => $message ]);
 		wp_die(); 
-    }
-    
-    private function getViewType($view){
-        $pieces = explode(':',$view);
-        if(count($pieces)==1) return $pieces[0];
-        else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
-        else throw new WPASException('The view '.$view.' is invalid');
     }
     
     private function getController($controller){

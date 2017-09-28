@@ -24,11 +24,7 @@ class WPASAsyncLoader{
     
     public function __construct($options=[]){
 
-        if(defined('WP_DEBUG_LOG') && WP_DEBUG_LOG)
-        {
-            if(!defined('ABSPATH')) throw new WPASException('Please declar a ASBPATH constant with your theme directory path');
-            WPASLogger::getLogger('wpas_asyncloader');
-        }
+        WPASLogger::getLogger('wpas_asyncloader');
         
         self::$insideAdmin = is_admin();
         if(!self::$insideAdmin){
@@ -269,8 +265,17 @@ class WPASAsyncLoader{
     
     private static function getMatch($currentPage, $hierarchy){
         if(!empty($hierarchy[$currentPage['type']])){
+            
             if(!empty($hierarchy[$currentPage['type']][$currentPage['slug']])) return $currentPage['slug'];
-            if(!empty($hierarchy[$currentPage['type']]['all'])) return 'all';
+            else
+            {
+                $templateSlug = 'template:'.get_page_template_slug();
+                if(!empty($hierarchy[$currentPage['type']][$templateSlug])){
+                    return $templateSlug;
+                } 
+                else if(!empty($hierarchy[$currentPage['type']]['all'])) return 'all';
+            } 
+            
         }else return null;
     }
     

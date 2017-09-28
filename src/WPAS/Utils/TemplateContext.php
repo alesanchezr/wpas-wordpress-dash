@@ -57,29 +57,38 @@ class TemplateContext{
         return self::$current;
     }
     
-    public static function matchesViewAndType($view, $type='default'){
-        $type = strtolower($type);
-        $view = strtolower($view);
+    public static function matchesViewAndType($view){
+        
+        $pieces = self::getViewPieces($view);
+        $type = 'default';
+        if(is_array($pieces))
+        {
+            $type = strtolower($pieces[0]);
+            $view = strtolower($pieces[1]);
+            
+        }else $pieces = ['default',$pieces];
         
         switch($type)
         {
             case 'default': 
-                return (is_page($view) || is_singular($view));
+                if(is_page($view) || is_singular($view)) return $pieces;
             break;
             case 'page':
-                if($view=='all') return is_page();
-                return is_page($view);
+                if($view=='all'){
+                    if(is_page()) return $pieces;
+                } 
+                else if(is_page($view)) return $pieces;
             break;
             case 'single': 
-                return is_singular($view);
+                if(is_singular($view)) return $pieces;
             break;
             case 'home': 
                 if ( is_front_page() && is_home() ) {
                   // Default homepage
-                  return true;
+                  return $pieces;
                 } elseif ( is_front_page() ) {
                   // static homepage
-                  return true;
+                  return $pieces;
                 } elseif ( is_home() ) {
                   // blog page
                   return false;
@@ -95,26 +104,38 @@ class TemplateContext{
                   return false;
                 } elseif ( is_home() ) {
                   // blog page
-                  return true;
+                  return $pieces;
                 } 
               return false;
             break;
             case "tag": 
-                if($view=='all') return is_tax() || is_tag();
-                else return is_tax($view) || is_tag($view); 
+                if($view=='all')
+                {
+                    if(is_tax() || is_tag()) return $pieces;
+                }
+                else if(is_tax($view) || is_tag($view)) return $pieces; 
             break;
             case "category": 
-                if($view=='all') return is_tax() || is_category();
-                else return is_tax($view) || is_category($view); 
+                if($view=='all') if(is_tax() || is_category()) return $pieces;
+                else if(is_tax($view) || is_category($view)) return $pieces;
             break;
             case "template":
                 if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
-                return is_page_template($view);
+                if(is_page_template($view)) return $pieces;
             break;
             case "search": 
-                return is_search(); 
+                if(is_search()) return $pieces;
             break;
             
         }
+    }
+    
+    private function getViewPieces($view){
+        
+        $pieces = explode(':',$view);
+        if(count($pieces)==1) return $pieces[0];
+        else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
+        else throw new WPASException('The view '.$view.' is invalid');
+        
     }
 }
