@@ -6,9 +6,7 @@ require_once('global_functions.php');
 
 use WPAS\Utils\WPASException;
 use WPAS\Utils\TemplateContext;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-use Monolog\Handler\FirePHPHandler;
+use WPAS\Utils\WPASLogger;
 
 class WPASController{
     
@@ -19,22 +17,16 @@ class WPASController{
     private $routes = [];
     private $options = [];
     private $closures = [];
-    private $logger = null;
     
     public static $ajaxController = null;
     static protected $args = [];
     
     public function __construct($options=[]){
         
-        if(WP_DEBUG_LOG)
+        if(defined('WP_DEBUG_LOG') && WP_DEBUG_LOG)
         {
-            //echo 'logging to: '.ABSPATH.'logs/wordpress.log'; die();
-            // Create the logger
-            $this->logger = new Logger('wpas_controller');
-            // Now add some handlers
-            $this->logger->pushHandler(new StreamHandler(ABSPATH.'/logs/wordpress.log', Logger::DEBUG));
-            $this->logger->pushHandler(new FirePHPHandler());
-            
+            if(!defined('ABSPATH')) throw new WPASException('Please declar a ASBPATH constant with your theme directory path');
+            WPASLogger::getLogger('wpas_controller');
         }
         
         $this->options = [
@@ -45,27 +37,28 @@ class WPASController{
             ];
         $this->loadOptions($options);
         
-        add_action('template_redirect', [$this,'load']);
-        add_action( 'init', [$this,'loadAjax'] );
-        
-        add_action ( 'wp_head', function(){ ?>
-            <script type="text/javascript">
-                /* <![CDATA[ */
-                var WPAS_APP = <?php echo json_encode($this->loadJavascriptVariables(), JSON_PRETTY_PRINT); ?>
-                /* ]]> */
-            </script>
-            <?php
-        },2 );
+        if($this->doingAJAX()){
+            add_action( 'init', [$this,'loadAjax'] );
+        }
+        else
+        {
+            add_action('template_redirect', [$this,'load']);
+            add_action ( 'wp_head', function(){ ?>
+                <script type="text/javascript">
+                    /* <![CDATA[ */
+                    var WPAS_APP = <?php echo json_encode($this->loadJavascriptVariables(), JSON_PRETTY_PRINT); ?>
+                    /* ]]> */
+                </script>
+                <?php
+            },2 );
+        }
     
     }
-    /*
-    function loadAjaxCalls(){
-		if ( is_admin() ) {
-			add_action( 'wp_ajax_nopriv_ajax-example', array( &$this, 'ajax_call' ) );
-			add_action( 'wp_ajax_ajax-example', array( &$this, 'ajax_call' ) );
-		}
-		add_action( 'init', array( &$this, 'init' ) );
-    }*/
+
+    function doingAJAX(){
+		if(!defined('DOING_AJAX')) return false;
+		else return true;
+    }
     
     private function loadOptions($options){
         foreach($this->options as $key => $val) 
@@ -73,7 +66,6 @@ class WPASController{
                 $this->options[$key] = $options[$key];
                 
     }
-    
     
     public function routeAjax($args){
         
@@ -104,7 +96,8 @@ class WPASController{
         $this->ajaxRouts[$view][$closureIndex] = $scope;
     }
     public function loadAjax(){
-
+        
+        WPASLogger::info('INIT AJAX');
         foreach($this->ajaxRouts as $view => $routes){
             foreach($routes as $controller => $scope){
                 $controller = $this->options['namespace'].$controller;
@@ -115,10 +108,6 @@ class WPASController{
                 $this->executeController($hookName,$controller);
             }
         }
-    }
-    
-    private function logInfo($message, $data=[]){
-        if($this->logger) $this->logger->info($message, $data);
     }
     
     private function executeController($hookName, $controller){
@@ -134,10 +123,10 @@ class WPASController{
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
             //if($methodName == 'download_syllabus') print("Adding hook: ".$hookName.$methodName); die();
             add_action($hookName.$methodName, array($v,$methodName)); 
-            $this->logInfo('Adding AJAX route '.$hookName.$methodName);
+            WPASLogger::info('WPASController: Adding AJAX route '.$hookName.$methodName);
             //if it is public I should also make available to logged in users
             if($hookName==self::PUBLIC_SCOPE){
-                $this->logInfo('Adding AJAX route '.self::PRIVATE_SCOPE.$methodName);
+                WPASLogger::info('WPASController: Adding AJAX route '.self::PRIVATE_SCOPE.$methodName);
                 add_action(self::PRIVATE_SCOPE.$methodName, array($v,$methodName)); 
             } 
         }
@@ -177,11 +166,12 @@ class WPASController{
         }
         
         $this->routes[$view] = $closureIndex;
+            
     }
     public function load(){
 
+        WPASLogger::info('WPASController: INIT');
         $this->loadAjaxController();
-        
         foreach($this->routes as $view => $controller){
             $viewType = 'default';
             $viewHierarchy = $this->getViewType($view);
@@ -191,7 +181,8 @@ class WPASController{
                 $viewType = $viewHierarchy[0]; //The type of the view
             }
             
-            if($this->isCurrentView($view,$viewType)){
+            if(TemplateContext::matchesViewAndType($view,$viewType)){
+                
                 $view = $this->prepareControllerName($view);
                 
                 $controllerObject = $this->getController($controller);
@@ -203,6 +194,7 @@ class WPASController{
                     $className = $controllerObject[0]; //The type of the view
                 }else if($view=='all') throw new WPASException('When using the "all" keyword you have to specify a method in the controler parameter');
                 
+                WPASLogger::info('WPASController: match found for [ type => '.$viewType.', view => '.$view.' ] calling: '.$methodName);
                 $controller = $this->options['namespace'].$className;
                 $v = new $controller();
                 if(is_callable([$v,$methodName])){
@@ -238,7 +230,8 @@ class WPASController{
                 $view = $viewHierarchy[1]; //The view
                 $viewType = $viewHierarchy[0]; //The type of the view
             }
-            if($this->isCurrentView($view,$viewType)){
+            if(TemplateContext::matchesViewAndType($view,$viewType)){
+                WPASLogger::info('WPASController: match found for [ type => '.$viewType.', view => '.$view.' ]');
                 self::$ajaxController = $this->prepareControllerName($view);
             }
         }
@@ -304,67 +297,6 @@ class WPASController{
         if(count($pieces)==1) return $pieces[0];
         else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
         else throw new WPASException('The controller '.$controller.' is invalid');
-    }
-    
-    private function isCurrentView($view, $type='default'){
-        $type = strtolower($type);
-        $view = strtolower($view);
-
-        switch($type)
-        {
-            case 'default': 
-                return (is_page($view) || is_singular($view));
-            break;
-            case 'page':
-                if($view=='all') return is_page();
-                return is_page($view);
-            break;
-            case 'single': 
-                return is_singular($view);
-            break;
-            case 'home': 
-                if ( is_front_page() && is_home() ) {
-                  // Default homepage
-                  return true;
-                } elseif ( is_front_page() ) {
-                  // static homepage
-                  return true;
-                } elseif ( is_home() ) {
-                  // blog page
-                  return false;
-                } 
-              return false;
-            break;
-            case 'blog': 
-                if ( is_front_page() && is_home() ) {
-                  // Default homepage
-                  return false;
-                } elseif ( is_front_page() ) {
-                  // static homepage
-                  return false;
-                } elseif ( is_home() ) {
-                  // blog page
-                  return true;
-                } 
-              return false;
-            break;
-            case "tag": 
-                if($view=='all') return is_tax() || is_tag();
-                else return is_tax($view) || is_tag($view); 
-            break;
-            case "category": 
-                if($view=='all') return is_tax() || is_category();
-                else return is_tax($view) || is_category($view); 
-            break;
-            case "template":
-                if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
-                return is_page_template($view);
-            break;
-            case "search": 
-                return is_search(); 
-            break;
-            
-        }
     }
     
     private function prepareControllerName($view){

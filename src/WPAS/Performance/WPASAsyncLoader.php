@@ -3,6 +3,7 @@
 namespace WPAS\Performance;
 use WPAS\Utils\WPASException;
 use WPAS\Utils\TemplateContext;
+use WPAS\Utils\WPASLogger;
 
 require_once('global_functions.php');
 
@@ -22,11 +23,16 @@ class WPASAsyncLoader{
     private static $criticalStylesQueue = [];
     
     public function __construct($options=[]){
+
+        if(defined('WP_DEBUG_LOG') && WP_DEBUG_LOG)
+        {
+            if(!defined('ABSPATH')) throw new WPASException('Please declar a ASBPATH constant with your theme directory path');
+            WPASLogger::getLogger('wpas_asyncloader');
+        }
         
         self::$insideAdmin = is_admin();
-        
-        if(!self::$insideAdmin)
-        {
+        if(!self::$insideAdmin){
+            
             if(!empty($options['leave-scripts-alone'])) $leaveScriptsAlone = $options['leave-scripts-alone'];
             
             if(empty($options['debug'])) $options['debug'] = false;
@@ -154,6 +160,7 @@ class WPASAsyncLoader{
         if(!empty(self::$criticalStyles))
         {
             $currentPage = TemplateContext::getContext(self::$ready);
+            WPASLogger::info('WPASAsyncLoader: Current Context [ type => '.$currentPage['type'].', slug => '.$currentPage['slug'].' ]');
             
             $key = self::getMatch($currentPage, self::$criticalStyles);
             //print_r(self::$criticalStyles); die();  

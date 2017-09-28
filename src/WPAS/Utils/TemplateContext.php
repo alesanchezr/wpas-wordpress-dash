@@ -56,4 +56,65 @@ class TemplateContext{
         //print_r(self::$current); die();
         return self::$current;
     }
+    
+    public static function matchesViewAndType($view, $type='default'){
+        $type = strtolower($type);
+        $view = strtolower($view);
+        
+        switch($type)
+        {
+            case 'default': 
+                return (is_page($view) || is_singular($view));
+            break;
+            case 'page':
+                if($view=='all') return is_page();
+                return is_page($view);
+            break;
+            case 'single': 
+                return is_singular($view);
+            break;
+            case 'home': 
+                if ( is_front_page() && is_home() ) {
+                  // Default homepage
+                  return true;
+                } elseif ( is_front_page() ) {
+                  // static homepage
+                  return true;
+                } elseif ( is_home() ) {
+                  // blog page
+                  return false;
+                } 
+              return false;
+            break;
+            case 'blog': 
+                if ( is_front_page() && is_home() ) {
+                  // Default homepage
+                  return false;
+                } elseif ( is_front_page() ) {
+                  // static homepage
+                  return false;
+                } elseif ( is_home() ) {
+                  // blog page
+                  return true;
+                } 
+              return false;
+            break;
+            case "tag": 
+                if($view=='all') return is_tax() || is_tag();
+                else return is_tax($view) || is_tag($view); 
+            break;
+            case "category": 
+                if($view=='all') return is_tax() || is_category();
+                else return is_tax($view) || is_category($view); 
+            break;
+            case "template":
+                if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
+                return is_page_template($view);
+            break;
+            case "search": 
+                return is_search(); 
+            break;
+            
+        }
+    }
 }
