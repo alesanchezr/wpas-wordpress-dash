@@ -130,7 +130,7 @@ class TemplateContext{
         }
     }
     
-    private function getViewPieces($view){
+    private static function getViewPieces($view){
         
         $pieces = explode(':',$view);
         if(count($pieces)==1) return $pieces[0];
