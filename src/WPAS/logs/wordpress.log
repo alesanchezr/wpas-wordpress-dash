@@ -1,6 +1,0 @@
-[2017-09-28 00:28:56] NULL.INFO: Adding AJAX route wp_ajax_nopriv_newsletter_signup [] []
-[2017-09-28 00:28:56] NULL.INFO: Adding AJAX route wp_ajax_newsletter_signup [] []
-[2017-09-28 00:28:56] NULL.INFO: Adding AJAX route wp_ajax_nopriv_download_syllabus [] []
-[2017-09-28 00:28:56] NULL.INFO: Adding AJAX route wp_ajax_download_syllabus [] []
-[2017-09-28 00:28:56] NULL.INFO: Adding AJAX route wp_ajax_nopriv_get_upcoming_event [] []
-[2017-09-28 00:28:56] NULL.INFO: Adding AJAX route wp_ajax_get_upcoming_event [] []

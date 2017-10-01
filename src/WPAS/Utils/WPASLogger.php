@@ -50,6 +50,11 @@ class WPASLogger {
 		if(!defined('WP_DEBUG_LOG') || WP_DEBUG_LOG == false) return false;
 		else return true;
 	}
+	
+	private static function debugEnabled(){
+		if(!defined('WP_DEBUG') || WP_DEBUG == false) return false;
+		else return true;
+	}
 
 	public static function debug($message, array $context = []){
 		if(self::loggingEnabled()) self::getLogger()->addDebug($message, $context);

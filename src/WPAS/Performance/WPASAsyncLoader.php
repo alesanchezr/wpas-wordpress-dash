@@ -41,7 +41,7 @@ class WPASAsyncLoader{
             $manifestURL = $options['public-url'].$options['manifest-url'];
             $jsonManifiest = json_decode($this->get_file_content($manifestURL));
             if($jsonManifiest) self::$manifest = $this->loadManifiest($jsonManifiest);
-            else throw new Exception('Invalid Manifiest Syntax');
+            else throw new WPASError('Invalid Manifiest Syntax');
             
             if(!empty($options['minify-html']) && $options['minify-html']===true){
                 if(!defined('UGLIFY_HTML')) ob_start([$this,"minifyHTML"]);
