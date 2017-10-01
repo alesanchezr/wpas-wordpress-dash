@@ -159,10 +159,8 @@ class WPASAsyncLoader{
             WPASLogger::info('WPASAsyncLoader: Current Context [ type => '.$currentPage['type'].', slug => '.$currentPage['slug'].' ]');
             
             $key = self::getMatch($currentPage, self::$criticalStyles);
-            //print_r(self::$criticalStyles); die();  
             if($key) self::print_styles(self::filter_manifest(self::$criticalStyles[$currentPage['type']][$key]));
         }
-        //echo print_r($currentPage); die();
     }
     
     /**
@@ -174,7 +172,6 @@ class WPASAsyncLoader{
         if(!empty(self::$styles))
         {
             $currentPage = TemplateContext::getContext(self::$ready);
-            //print_r($currentPage); die();
             $key = self::getMatch($currentPage, self::$styles);
             if($key) self::print_style_tag(self::$styles[$currentPage['type']][$key]);
         }
@@ -188,7 +185,6 @@ class WPASAsyncLoader{
         if(!empty(self::$scripts))
         {
             $currentPage = TemplateContext::getContext(self::$ready);
-            //print_r($currentPage); die();
             $key = self::getMatch($currentPage, self::$scripts);
             if($key){
                 self::printScripts(self::$scripts[$currentPage['type']][$key]);

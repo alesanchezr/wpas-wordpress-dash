@@ -117,7 +117,7 @@ class WPASController{
             if(!class_exists($controller))  throw new WPASException('Controller Class '.$controller.' does not exists');
             $v = new $controller();
             if(!is_callable([$v,$methodName])) throw new WPASException('Ajax method '.$methodName.' does not exists in controller '.$controller);
-            //if($methodName == 'download_syllabus') print("Adding hook: ".$hookName.$methodName); die();
+
             add_action($hookName.$methodName, array($v,$methodName)); 
             WPASLogger::info('WPASController: Adding AJAX route '.$hookName.$methodName);
             //if it is public I should also make available to logged in users

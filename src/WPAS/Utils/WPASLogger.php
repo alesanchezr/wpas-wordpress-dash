@@ -42,7 +42,7 @@ class WPASLogger {
 		
 		self::$currentIndex = $class;
 		if(!isset(self::$instances[$class])) self::$instances[$class] = new Logger($class);
-		//echo $dir . DIRECTORY_SEPARATOR .'wordpress.log'; die();
+
 		self::$instances[$class]->pushHandler(new StreamHandler($dir . DIRECTORY_SEPARATOR .'wordpress.log', Logger::DEBUG));
 	}
 	

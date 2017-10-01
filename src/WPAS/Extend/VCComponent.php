@@ -30,7 +30,6 @@ class VCComponent implements VCComponentInterface{
     }
     
     function register(){
-    	//print_r($this->options); die();
 	   vc_map( $this->options);
     }
     

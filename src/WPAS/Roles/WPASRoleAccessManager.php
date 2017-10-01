@@ -36,7 +36,6 @@ class WPASRoleAccessManager{
   
   function login_redirect( $redirect_to, $request, $user ) {
     
-    //echo $redirect_to; die();
   	//is there a user to check
   	if ( isset( $user->roles ) && is_array( $user->roles ) ) {
   		//check for admins
@@ -123,8 +122,6 @@ class WPASRoleAccessManager{
     if($this->is_login_page()) return true;
     if($this->allowedPages[$role_name]==='all') return true;
     if(!$currentContext) $currentContext = TemplateContext::getContext();
-    
-    //echo $role_name; print_r($this->allowedPages[$role_name]); die();
     
     if( !isset($this->allowedPages[$role_name])) return false;
     

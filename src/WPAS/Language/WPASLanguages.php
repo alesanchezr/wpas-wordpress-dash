@@ -24,7 +24,6 @@ class WPASLanguages{
 		if(empty(self::$languagesDirectory)) throw new WPASException('You need to specify a laguages directory');
 		
 		self::$currentLanguage = pll_current_language();
-		//echo self::$currentLanguage; die();
 		
 		//$languageUrl = self::$languagesDirectory.self::$currentLanguage.'.lang.php';
 		$languageUrl = self::$languagesDirectory.'all.lang.php';
@@ -47,7 +46,6 @@ class WPASLanguages{
 			if(empty(self::$currentTranslations['labels']))  throw new WPASException("The language array must have a 'labels' key with the list of key->value strings to register", 1);
 			
 			$languageArray = self::$currentTranslations['labels'];
-			//print_r($languageArray); die();
 			foreach ($languageArray as $key => $value) {
 				pll_register_string($key, $value);
 			}
@@ -73,8 +71,6 @@ class WPASLanguages{
 		
 		$studentTemplate = self::$currentTranslations['student'];
 		if(!isset($studentTemplate[$key])) throw new WPASException("Invalid student template string key");
-		
-		//print_r($args); die();
 		
 		return HelperStringFormat::sprintf($studentTemplate[$key], $args);
 	}

@@ -263,7 +263,7 @@ class WPASThemeSettingsBuilder{
 			// Build text
 			case 'text_array':
 				$meta = get_option($array['name']);
-				//die(print_r($meta));
+
 				$value = $meta[$array['label']];
 				echo '<input type="text" class="'.$html_class.'" name="'.$array['name'].'['.$array['label'].']" value="'.$value.'" />';
 				if (array_key_exists('tooltip', $array)) {

@@ -30,7 +30,7 @@ class BaseGravityFormField{
     public function render_label( $title, $type ){
         if ( $type == $this->type ) 
         {
-            echo $this->label; die();
+            //echo $this->label; die();
             return __( $this->label , 'gravityforms' );
         }
     }
