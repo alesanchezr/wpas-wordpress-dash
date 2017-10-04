@@ -66,8 +66,11 @@ class TemplateContext{
             $type = strtolower($pieces[0]);
             $view = strtolower($pieces[1]);
             
-        }else $pieces = ['default',$pieces];
-        
+        }else{
+            $view = strtolower($view);
+            $pieces = ['default',$pieces];
+        } 
+
         switch($type)
         {
             case 'default': 
@@ -119,8 +122,12 @@ class TemplateContext{
                 else if(is_tax($view) || is_tag($view)) return $pieces; 
             break;
             case "category": 
-                if($view=='all') if(is_tax() || is_category()) return $pieces;
-                else if(is_tax($view) || is_category($view)) return $pieces;
+                if($view=='all'){
+                    if(is_tax() || is_category()) return $pieces;
+                } 
+                else if(is_tax($view) || is_category($view)){
+                    return $pieces;
+                } 
             break;
             case "template":
                 if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
@@ -131,6 +138,8 @@ class TemplateContext{
             break;
             
         }
+        
+        return false;
     }
     
     private static function getViewPieces($view){

@@ -161,7 +161,6 @@ class WPASController{
             ];
         }
         
-        echo $view;
         $this->routes[$view] = $closureIndex;
             
     }
