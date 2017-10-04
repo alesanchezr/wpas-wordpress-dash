@@ -77,7 +77,10 @@ class TemplateContext{
                 if($view=='all'){
                     if(is_page()) return $pieces;
                 } 
-                else if(is_page($view)) return $pieces;
+                else if(is_page($view)){
+                    print_r($pieces); die();
+                    return $pieces;
+                } 
             break;
             case 'single': 
                 if(is_singular($view)) return $pieces;

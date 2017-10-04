@@ -161,6 +161,7 @@ class WPASController{
             ];
         }
         
+        echo $view;
         $this->routes[$view] = $closureIndex;
             
     }
@@ -182,7 +183,7 @@ class WPASController{
                     $methodName = $controllerObject[1]; //The view
                     $className = $controllerObject[0]; //The type of the view
                 }else if($view=='all') throw new WPASException('When using the "all" keyword you have to specify a method in the controler parameter');
-                
+
                 WPASLogger::info('WPASController: match found for [ type => '.$pieces[0].', view => '.$pieces[1].' ] calling: '.$methodName);
                 $controller = $this->options['namespace'].$className;
                 $v = new $controller();
