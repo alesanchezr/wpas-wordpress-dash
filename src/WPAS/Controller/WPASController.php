@@ -280,8 +280,7 @@ class WPASController{
     }
     
     public static function getViewData(){
-        
-        if(empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
+        if(is_array(self::$args) && empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
         return self::$args;
     }
 }
