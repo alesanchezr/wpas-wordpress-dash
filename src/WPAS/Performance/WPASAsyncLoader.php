@@ -4,6 +4,7 @@ namespace WPAS\Performance;
 use WPAS\Utils\WPASException;
 use WPAS\Utils\TemplateContext;
 use WPAS\Utils\WPASLogger;
+use WPAS\Utils\HelperHTTP;
 
 require_once('global_functions.php');
 
@@ -39,9 +40,11 @@ class WPASAsyncLoader{
             if(empty($options['manifest-url'])) $options['manifest-url'] = 'manifest.json';
             
             $manifestURL = $options['public-url'].$options['manifest-url'];
+            if (!HelperHTTP::url_exists($manifestURL)) throw new WPASException('Unable to load manifest from: '.$manifestURL);
+            
             $jsonManifiest = json_decode($this->get_file_content($manifestURL));
             if($jsonManifiest) self::$manifest = $this->loadManifiest($jsonManifiest);
-            else throw new WPASError('Invalid Manifiest Syntax');
+            else throw new WPASException('Invalid Manifiest Syntax');
             
             if(!empty($options['minify-html']) && $options['minify-html']===true){
                 if(!defined('UGLIFY_HTML')) ob_start([$this,"minifyHTML"]);

@@ -240,7 +240,8 @@ class WPASController{
     }
     
     public static function getAjaxController(){
-        return end(explode(":",self::$ajaxController));
+        $pieces = explode(":",self::$ajaxController);
+        return end($pieces);
     }
     
     public static function printError($error){

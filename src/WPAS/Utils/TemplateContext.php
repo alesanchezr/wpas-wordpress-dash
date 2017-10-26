@@ -39,7 +39,8 @@ class TemplateContext{
         } 
         else if(is_home()){
             global $wp_query;
-            self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
+            if(isset($wp_query->query['pagename'])) self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
+            else self::$current = ['type'=>'page', 'slug' => null];
         } 
         else if(is_attachment()){
             global $wp_query;
