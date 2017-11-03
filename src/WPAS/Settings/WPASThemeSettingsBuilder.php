@@ -11,6 +11,8 @@
  */
 namespace WPAS\Settings;
 
+require_once('global_functions.php');
+
 class WPASThemeSettingsBuilder{
 
 	const THEME_OPTIONS_KEY = "wpas_theme_options_";

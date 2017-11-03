@@ -65,6 +65,15 @@ echo $data['wp_query']; //in case you need the Queried Object (default loop) it 
             ];
 ```
 
+##Logging
+
+Set WP_DEBUG_LOG = true to start logging, check the /logs directory in your wordpress root.
+
+```php
+//as a part of your wp-config.php
+define('WP_DEBUG_LOG', true);
+```
+
 ## Options
 
 When intanciating a new WPASController you can to specify the following options:
