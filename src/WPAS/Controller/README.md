@@ -76,6 +76,19 @@ When intanciating a new WPASController you can to specify the following options:
 | mainscript-requierments (optinal) | ''        | ['script1',] |
 | namespace (optional)              | ''        | PHP namespace in which all your controller classes are goign to be declared |
 
+## Javascript Global Variable Injection
+
+If you want, you can inject more properties into the WPAS_APP object by using the "wpas_js_global_variables" filter, like this:
+
+```php
+		add_filter('wpas_js_global_variables', function($name, $data){
+			$data['lang'] = 'english';
+			return $data;
+		},10,2);
+```
+
+Here I'm specifying that may language is english
+
 ### Author
 
 **Alejandro Sanchez**

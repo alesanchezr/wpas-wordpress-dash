@@ -25,6 +25,11 @@ class WPASLanguages{
 		
 		self::$currentLanguage = pll_current_language();
 		
+		add_filter('wpas_js_global_variables', function($name, $data){
+			$data['lang'] = self::$currentLanguage;
+			return $data;
+		},10,2);
+		
 		//$languageUrl = self::$languagesDirectory.self::$currentLanguage.'.lang.php';
 		$languageUrl = self::$languagesDirectory.'all.lang.php';
 		self::$currentTranslations = require($languageUrl);

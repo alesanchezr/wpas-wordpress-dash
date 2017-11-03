@@ -204,9 +204,16 @@ class WPASController{
 	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
         $data['ajax_url'] = admin_url( 'admin-ajax.php' );
         $data['view'] = $context;
+        $data['url'] = $this->getCurrentURL();
         $data['controller'] = self::getAjaxController();
+        $data = apply_filters( 'wpas_js_global_variables', 'Filter Javascript WPAS Object', $data );
         
         return $data;
+    }
+    
+    private function getCurrentURL(){
+        global $wp;
+        return home_url(add_query_arg(array(),$wp->request));
     }
     
     public function loadAjaxController(){
