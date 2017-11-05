@@ -206,7 +206,7 @@ class WPASController{
         $data['view'] = $context;
         $data['url'] = $this->getCurrentURL();
         $data['controller'] = self::getAjaxController();
-        $data = apply_filters( 'wpas_js_global_variables', 'Filter Javascript WPAS Object', $data );
+        $data = apply_filters( 'wpas_js_global_variables', $data );
         
         return $data;
     }
