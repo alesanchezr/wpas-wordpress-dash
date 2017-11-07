@@ -182,7 +182,7 @@ class WPASController{
                     $methodName = $controllerObject[1]; //The view
                     $className = $controllerObject[0]; //The type of the view
                 }else if($view=='all') throw new WPASException('When using the "all" keyword you have to specify a method in the controler parameter');
-                
+
                 WPASLogger::info('WPASController: match found for [ type => '.$pieces[0].', view => '.$pieces[1].' ] calling: '.$methodName);
                 $controller = $this->options['namespace'].$className;
                 $v = new $controller();
@@ -204,9 +204,16 @@ class WPASController{
 	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
         $data['ajax_url'] = admin_url( 'admin-ajax.php' );
         $data['view'] = $context;
+        $data['url'] = $this->getCurrentURL();
         $data['controller'] = self::getAjaxController();
+        $data = apply_filters( 'wpas_js_global_variables', $data );
         
         return $data;
+    }
+    
+    private function getCurrentURL(){
+        global $wp;
+        return home_url(add_query_arg(array(),$wp->request));
     }
     
     public function loadAjaxController(){
@@ -240,7 +247,8 @@ class WPASController{
     }
     
     public static function getAjaxController(){
-        return self::$ajaxController;
+        $pieces = explode(":",self::$ajaxController);
+        return end($pieces);
     }
     
     public static function printError($error){
@@ -280,8 +288,7 @@ class WPASController{
     }
     
     public static function getViewData(){
-        
-        if(empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
+        if(is_array(self::$args) && empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
         return self::$args;
     }
 }

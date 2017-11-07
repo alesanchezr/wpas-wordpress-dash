@@ -20,6 +20,8 @@ function wpas_critical_head(){
 }
 
 function wpas_load_styles($styles){
-    
     \WPAS\Performance\WPASStylesManager::setStyles($styles);
+}
+function wpas_filter_manifest($url){
+    return WPAS\Performance\WPASAsyncLoader::filter_manifest($url);
 }

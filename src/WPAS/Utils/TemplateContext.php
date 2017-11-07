@@ -39,7 +39,8 @@ class TemplateContext{
         } 
         else if(is_home()){
             global $wp_query;
-            self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
+            if(isset($wp_query->query['pagename'])) self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
+            else self::$current = ['type'=>'page', 'slug' => null];
         } 
         else if(is_attachment()){
             global $wp_query;
@@ -66,8 +67,11 @@ class TemplateContext{
             $type = strtolower($pieces[0]);
             $view = strtolower($pieces[1]);
             
-        }else $pieces = ['default',$pieces];
-        
+        }else{
+            $view = strtolower($view);
+            $pieces = ['default',$pieces];
+        } 
+
         switch($type)
         {
             case 'default': 
@@ -77,7 +81,10 @@ class TemplateContext{
                 if($view=='all'){
                     if(is_page()) return $pieces;
                 } 
-                else if(is_page($view)) return $pieces;
+                else if(is_page($view)){
+                    print_r($pieces); die();
+                    return $pieces;
+                } 
             break;
             case 'single': 
                 if(is_singular($view)) return $pieces;
@@ -116,8 +123,12 @@ class TemplateContext{
                 else if(is_tax($view) || is_tag($view)) return $pieces; 
             break;
             case "category": 
-                if($view=='all') if(is_tax() || is_category()) return $pieces;
-                else if(is_tax($view) || is_category($view)) return $pieces;
+                if($view=='all'){
+                    if(is_tax() || is_category()) return $pieces;
+                } 
+                else if(is_tax($view) || is_category($view)){
+                    return $pieces;
+                } 
             break;
             case "template":
                 if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
@@ -128,6 +139,8 @@ class TemplateContext{
             break;
             
         }
+        
+        return false;
     }
     
     private static function getViewPieces($view){
