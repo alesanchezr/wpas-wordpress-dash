@@ -18,3 +18,8 @@ function wpas_footer(){
 function wpas_critical_head(){
     do_action('wpas_print_critical_styles');
 }
+
+function wpas_load_styles($styles){
+    
+    \WPAS\Performance\WPASStylesManager::setStyles($styles);
+}
