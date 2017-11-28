@@ -171,7 +171,7 @@ class WPASController{
         foreach($this->routes as $view => $controller){
             
             if($pieces = TemplateContext::matchesViewAndType($view)){
-                
+
                 $view = $this->prepareControllerName($pieces[1]);
                 
                 $controllerObject = $this->getController($controller);

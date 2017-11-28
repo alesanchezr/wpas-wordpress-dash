@@ -55,6 +55,7 @@ class TemplateContext{
             else if(!empty($wp_query->name)) self::$current = ['type'=>'page', 'slug' => $wp_query->name];
         }
         //print_r(self::$current); die();
+        self::$current['template'] = str_replace('.php','',get_page_template_slug());
         return self::$current;
     }
     
@@ -132,7 +133,10 @@ class TemplateContext{
             break;
             case "template":
                 if(strpos($view, '.php') == false) throw new WPASException('Your template name '.$view.' has to be a .php file name');
-                if(is_page_template($view)) return $pieces;
+                if(get_page_template_slug()==$view)
+                {
+                    return $pieces;
+                }
             break;
             case "search": 
                 if(is_search()) return $pieces;
