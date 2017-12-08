@@ -72,7 +72,6 @@ class TemplateContext{
             $view = strtolower($view);
             $pieces = ['default',$pieces];
         } 
-
         switch($type)
         {
             case 'default': 
