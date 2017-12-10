@@ -9,7 +9,7 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 
 ### Installation
 ```php
-$ composer install alesanchezr/wpas-wordpress-dash
+$ composer require alesanchezr/wpas-wordpress-dash
 ```
 
 
