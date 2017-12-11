@@ -4,8 +4,8 @@ NOTICE: This library is still on early development, it was tested in a few websi
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
-1. MVC Pattern implementation (Model-View-Controller).
-2. Better AJAX.
+1. MVC Pattern implementation (Model-View-Controller) in WordPress.
+2. Better AJAX in WordPress.
 
 ### Installation
 
@@ -14,41 +14,36 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 $ composer require alesanchezr/wpas-wordpress-dash
 ```
 (Optional) 2. Configure composer autoload functionality (composer.json). Add:
-        ```sh
-        ...,
-        "autoload":{
-                "psr-0":{
-                    "php" : "./wp-content/themes/<theme_name>/src"
-                }
-            }
+```sh
+...,
+"autoload":{
+        "psr-0":{
+            "php" : "./wp-content/themes/<theme_name>/src"
+        }
+    }
+...
+```
+The suggested folder structure for the project files is:
+```sh
+<theme_name>/
+    ...
+    /src
         ...
-        ```
-        The suggested folder structure is:
-        ```sh
-        <theme_name>/
-            ...
-            /src
-                ...
-                /php
-                    /Controllers
-                        /<controller_name>.php
-                        /<controller2_name2>.php
-        ```
-        3. Run composer update
-        ```sh composer update ```
-        
-        4. Create a new WPASController class (functions.php)
-        ```php
-        use \WPAS\Controller\WPASController;
-        $controller = new WPASController([
-                'namespace' => 'php\\Controllers\\'
-            ]);
-        ```
+        /php
+            /Controllers
+                /<controller_name>.php
+                /<controller2_name2>.php
+```
+3. Run composer update
+```sh composer update ```
 
-2. Create a new WPASController class
+4. Create a new WPASController class (functions.php)
 ```php
 use \WPAS\Controller\WPASController;
-$controller = new WPASController([]);
+$controller = new WPASController([
+        //Here you specify the path to your consollers folder
+        'namespace' => 'php\\Controllers\\'
+    ]);
 ```
 
 ### Working with the MVC Pattern
