@@ -35,7 +35,9 @@ The suggested folder structure for the project files is:
                 /<controller2_name2>.php
 ```
 3. Run composer update
-```sh composer update ```
+```sh 
+$ composer update
+```
 
 4. Create a new WPASController class (functions.php)
 ```php
