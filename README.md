@@ -13,32 +13,42 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 ```sh
 $ composer require alesanchezr/wpas-wordpress-dash
 ```
-2. Update the path to your controllers' folder
-```sh
-"autoload":{
-        "psr-0":{
-            "php" : "./wp-content/themes/<theme_name>/src"
-        }
-    }
-```
-The suggested folder structure is:
-```sh
-<theme_name>/
-    ...
-    /src
+(Optional) 2. Configure composer autoload functionality (composer.json). Add:
+        ```sh
+        ...,
+        "autoload":{
+                "psr-0":{
+                    "php" : "./wp-content/themes/<theme_name>/src"
+                }
+            }
         ...
-        /php
-            /Controllers
-                /<controller_name>.php
-                /<controller2_name2>.php
-```
+        ```
+        The suggested folder structure is:
+        ```sh
+        <theme_name>/
+            ...
+            /src
+                ...
+                /php
+                    /Controllers
+                        /<controller_name>.php
+                        /<controller2_name2>.php
+        ```
+        3. Run composer update
+        ```sh composer update ```
+        
+        4. Create a new WPASController class (functions.php)
+        ```php
+        use \WPAS\Controller\WPASController;
+        $controller = new WPASController([
+                'namespace' => 'php\\Controllers\\'
+            ]);
+        ```
 
 2. Create a new WPASController class
 ```php
 use \WPAS\Controller\WPASController;
-$controller = new WPASController([
-        'namespace' => 'php\\Controllers\\'
-    ]);
+$controller = new WPASController([]);
 ```
 
 ### Working with the MVC Pattern
