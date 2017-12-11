@@ -8,31 +8,19 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 2. MVC Pattern implementation (Model-View-Controller).
 
 ### Installation
-```php
+
+1. Require the library with composer
+```sh
 $ composer require alesanchezr/wpas-wordpress-dash
 ```
 
-
-### Working with AJAX
-
-Add one MVC-like route for each AJAX request:
-
+2. Create a new WPASController class
 ```php
-//Using a 'General' controller class to process the 'newsletter_signup' ajax action in the page with the slug 'contact-us'
-$controller->routeAjax([ 'slug' => 'Page:contact-us', 'controller' => 'General:newsletter_signup' ]);  
-
-//Instead, you can use a closure if you like
-$controller->routeAjax([ 'slug' => 'Category:news', 'controller' => function(){
-
-    //here goes the script to fetch for the data
-    $data['variable1'] = 'Hello World';
-    return $data;
-]);
+use \WPAS\Controller\WPASController;
+$controller = new WPASController();
 ```
 
-[Continue reading about Working with AJAX](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
-
-### Simple MVC Pattern
+### Working with the MVC Pattern
 
 Create ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
 
@@ -40,7 +28,7 @@ Create ***Controller*** classes and bind them to your views, pages, categories, 
 //Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
 $controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
 ```
-Our Course.php controller will look like this:
+Our Course.php controller class will look like this:
 
 ```php
 class Course{
@@ -56,7 +44,26 @@ class Course{
 ```
 [Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
-## Upcomming Experimental Features
+### Working with AJAX
+
+Add one MVC-like route for each AJAX request:
+
+```php
+//Using a 'General' controller class to process the 'newsletter_signup' ajax action in the page with the slug 'contact-us'
+$controller->routeAjax([ 'slug' => 'Page:contact-us', 'controller' => 'General:newsletter_signup' ]);  
+
+//Or Instead, you can use a closure if you like
+$controller->routeAjax([ 'slug' => 'Category:news', 'controller' => function(){
+
+    //here goes the script to fetch for the data
+    $data['variable1'] = 'Hello World';
+    return $data;
+}]);
+```
+
+[Continue reading about Working with AJAX](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
+
+## Upcomming Experimental Features (Not Stable)
 
 1. Add WordPress roles programatically.
 2. Restrict Role Access to particular pages, posts, categories, etc.
