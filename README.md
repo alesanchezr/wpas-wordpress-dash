@@ -22,6 +22,7 @@ $ composer require alesanchezr/wpas-wordpress-dash
     }
 ```
 The suggested folder structure is:
+```sh
 <theme_name>/
     ...
     /src
@@ -30,6 +31,7 @@ The suggested folder structure is:
             /Controllers
                 /<controller_name>.php
                 /<controller2_name2>.php
+```
 
 2. Create a new WPASController class
 ```php
