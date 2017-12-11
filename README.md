@@ -4,14 +4,42 @@ NOTICE: This library is still on early development, it was tested in a few websi
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
-1. Better AJAX.
-2. MVC Pattern implementation (Model-View-Controller).
+1. MVC Pattern implementation (Model-View-Controller).
+2. Better AJAX.
 
 ### Installation
 ```php
 $ composer require alesanchezr/wpas-wordpress-dash
 ```
 
+### Simple MVC Pattern
+
+Create ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
+
+```php
+use \WPAS\Controller\WPASController;
+$controller = new WPASController([
+    //options (optional)
+]);
+
+//Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
+$controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
+```
+Our Course.php controller will look like this:
+
+```php
+class Course{
+    
+    public function getCourseInfo(){
+        
+        $args = [];
+        $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
+        return $args;
+    }
+    
+}
+```
+[Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
 ### Working with AJAX
 
@@ -32,29 +60,6 @@ $controller->routeAjax([ 'slug' => 'Category:news', 'controller' => function(){
 
 [Continue reading about Working with AJAX](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
-### Simple MVC Pattern
-
-Create ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
-
-```php
-//Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
-$controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
-```
-Our Course.php controller will look like this:
-
-```php
-class Course{
-    
-    public function getCourseInfo(){
-        
-        $args = [];
-        $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
-        return $args;
-    }
-    
-}
-```
-[Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
 ## Upcomming Experimental Features
 
