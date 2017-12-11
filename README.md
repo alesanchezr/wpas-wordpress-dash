@@ -4,8 +4,8 @@ NOTICE: This library is still on early development, it was tested in a few websi
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
-1. Better AJAX.
-2. MVC Pattern implementation (Model-View-Controller).
+1. MVC Pattern implementation (Model-View-Controller).
+2. Better AJAX.
 
 ### Installation
 
@@ -14,6 +14,7 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 $ composer require alesanchezr/wpas-wordpress-dash
 ```
 
+<<<<<<< HEAD
 2. Create a new WPASController class
 ```php
 use \WPAS\Controller\WPASController;
@@ -22,8 +23,7 @@ $controller = new WPASController();
 
 ### Working with the MVC Pattern
 
-Create ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
-
+Create your ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
 ```php
 //Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
 $controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
