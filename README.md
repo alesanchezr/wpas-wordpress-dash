@@ -13,12 +13,30 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 ```sh
 $ composer require alesanchezr/wpas-wordpress-dash
 ```
+2. Update the path to your controllers' folder
+```sh
+"autoload":{
+        "psr-0":{
+            "php" : "./wp-content/themes/<theme_name>/src"
+        }
+    }
+```
+The suggested folder structure is:
+<theme_name>/
+    ...
+    /src
+        ...
+        /php
+            /Controllers
+                /<controller_name>.php
+                /<controller2_name2>.php
 
-<<<<<<< HEAD
 2. Create a new WPASController class
 ```php
 use \WPAS\Controller\WPASController;
-$controller = new WPASController();
+$controller = new WPASController([
+        'namespace' => 'php\\Controllers\\'
+    ]);
 ```
 
 ### Working with the MVC Pattern
@@ -31,13 +49,14 @@ $controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);
 Our Course.php controller class will look like this:
 
 ```php
+namespace php\Controllers;
 class Course{
     
-    public function getCourseInfo(){
+    public function renderCourse(){
         
         $args = [];
         $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
-        return $args;
+        return $args;//Always return an Array type
     }
     
 }
