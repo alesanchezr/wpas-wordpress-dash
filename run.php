@@ -113,8 +113,6 @@
             
             $this->updateComposer();
             Runner::printSuccess("The theme was created successfully \n");
-            
-            
         }
         
         static function printWarning($message, $input=false){
