@@ -95,8 +95,8 @@
             echo "Updating your current theme... \n";
             $this->createTypes();
             $this->createControllers();
-            Runner::printSuccess("The theme was updated successfully! \n");
             $this->updateComposer();
+            Runner::printSuccess("The theme was updated successfully! \n");
         }
         function createTheme(){
             
@@ -109,11 +109,9 @@
             
             $this->createTypes();
             $this->createControllers();
-            
-            Runner::printSuccess("The theme was created successfully \n");
-            
             $this->updateComposer();
             
+            Runner::printSuccess("The theme was created successfully \n");
         }
         
         static function printWarning($message, $input=false){
