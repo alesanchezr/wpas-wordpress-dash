@@ -18,14 +18,14 @@ Right now, there are only two commands available:
 ```sh
 $ wp dash-generate <YourController>
 ```
-Note: Your controller names must end in "Controller", for example: CarController
+Note: Your controller names must end with "Controller", for example: Car**Controller**
 
 
 2) Generate a new custom post type file
 ```sh
 $ wp dash-generate <YourPostType>
 ```
-Note: Your PostType names must end in "PostType", for example: CoursePostType
+Note: Your PostType names must end with "PostType", for example: Course**PostType**
 
 The tool will generate the folders and also the files
 
