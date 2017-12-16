@@ -1,6 +1,6 @@
 # WordPress Dash command line tool (CLI)
 
-You can use WordPress Dash to generate the code you need for your controllers and CustomPostTypes
+You can use command line to generate the any code you need for the Controllers and CustomPostTypes.
 
 ## Instalation
 
