@@ -11,7 +11,7 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 
 1. Require the library with composer
 ```sh
-$ composer require alesanchezr/wpas-wordpress-dash
+$ composer require alesanchezr/wpas-worpress-dash:dev-master
 ```
 (Optional) 2. Configure composer autoload functionality (composer.json). Add:
 ```sh
