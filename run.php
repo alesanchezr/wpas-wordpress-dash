@@ -87,6 +87,7 @@
             ];
             $composerNew = json_encode($composerObj, JSON_PRETTY_PRINT);
             $this->saveFile('composer.json', $composerNew);
+            echo shell_exec('composer dump-autoload') . "\n";
             Runner::printSuccess("The composer.json was update successfully \n");
         }
         
