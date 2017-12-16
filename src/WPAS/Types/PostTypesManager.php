@@ -45,7 +45,7 @@ class PostTypesManager{
         if(!is_subclass_of($classPath, 'WPAS\Types\BasePostType')) throw new WPASException('Your class '.$classPath.' has to inherit from \WPAS\Types\BasePostType');
         
         $pt = null;
-        if($options) $pt = new $classPath($type, $options);
+        if(is_array($options)) $pt = new $classPath($type, $options);
         else $pt = new $classPath($type);
         return $pt;
     }

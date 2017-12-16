@@ -12,7 +12,7 @@ class ControllerCommands {
     {
         $themeDirectory = get_stylesheet_directory().self::CONTROLLERS_PATH;
 
-        if(!is_dir($themeDirectory)) $this->createControllerFolder($themeDirectory);
+        if(!is_dir($themeDirectory)) self::createControllerFolder($themeDirectory);
         WP_CLI::line( "Generating controller file: ".$controllerName.'.php' );
         $myfile = fopen($themeDirectory.$controllerName.".php", "w") or WP_CLI::Error( "Unable to open file!");
         $txt ='<?php
@@ -45,7 +45,7 @@ class '.$controllerName.'{
         WP_CLI::Success( "Controller '".$controllerName."' was created." );
     }
     
-    function createControllerFolder($themeDirectory){
+    static function createControllerFolder($themeDirectory){
         WP_CLI::line( "Generating controller folder in ".$themeDirectory );
         if (!mkdir($themeDirectory, 0777, true)) {
             WP_CLI::Error( "Fail to create the directory structure, check the directory permisions" );
