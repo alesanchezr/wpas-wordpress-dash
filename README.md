@@ -13,33 +13,13 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 ```sh
 $ composer require alesanchezr/wpas-wordpress-dash:dev-master
 ```
-(Optional) 2. Configure composer autoload functionality (composer.json). Add:
+
+2. Create a new theme using the installation script
 ```sh
-...,
-"autoload":{
-        "psr-0":{
-            "php" : "./wp-content/themes/<theme_name>/src"
-        }
-    }
-...
-```
-The suggested folder structure for the project files is:
-```sh
-<theme_name>/
-    ...
-    /src
-        ...
-        /php
-            /Controllers
-                /<controller_name>.php
-                /<controller2_name2>.php
-```
-3. Run composer update
-```sh 
-$ composer update
+$ php vendor/alesanchezr/wpas-wordpress-dash/run.php <your_theme_directory_name>
 ```
 
-4. Create a new WPASController class (functions.php)
+4. Update the WPASController according to your needs in functions.php
 ```php
 use \WPAS\Controller\WPASController;
 $controller = new WPASController([
