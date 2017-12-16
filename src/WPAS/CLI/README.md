@@ -4,15 +4,22 @@ You can use command line to generate the any code you need for the Controllers a
 
 ## Instalation
 
-In order to be able to use the commands, pelase add this code anywhere in your functions.php
-
-```php
-if ( class_exists( 'WP_CLI' ) ) { $i = new \WPAS\CLI\CLIManager(); }
+First install the library via composer
+```
+$ composer require alesanchezr/wpas-wordpress-dash:dev-master
 ```
 
-## Available commands
+Now, to begin using the CLI, please run this command after downloaded the library with composer
 
-Right now, there are only two commands available:
+```sh
+$ php vendor/alesanchezr/wpas-wordpress-dash/run.php <your_theme_directory_name>
+```
+
+That command is going to create your theme with the basic structure necesary to start coding.
+
+## Other available commands
+
+Right now, there are only two other commands available:
 
 1) Generate a new controller file.
 ```sh
