@@ -87,6 +87,7 @@
             ];
             $composerNew = json_encode($composerObj, JSON_PRETTY_PRINT);
             $this->saveFile('composer.json', $composerNew);
+            echo shell_exec('composer dump-autoload') . "\n";
             Runner::printSuccess("The composer.json was update successfully \n");
         }
         
@@ -95,8 +96,8 @@
             echo "Updating your current theme... \n";
             $this->createTypes();
             $this->createControllers();
-            Runner::printSuccess("The theme was updated successfully! \n");
             $this->updateComposer();
+            Runner::printSuccess("The theme was updated successfully! \n");
         }
         function createTheme(){
             
@@ -110,9 +111,9 @@
             $this->createTypes();
             $this->createControllers();
             
+            $this->updateComposer();
             Runner::printSuccess("The theme was created successfully \n");
             
-            $this->updateComposer();
             
         }
         

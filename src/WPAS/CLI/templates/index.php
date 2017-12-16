@@ -23,7 +23,7 @@ if ( have_posts() ) :
 
 else : 
 
-    <p>No post(s) found</p>
+    echo '<p>No post(s) found</p>';
 
 endif; 
 

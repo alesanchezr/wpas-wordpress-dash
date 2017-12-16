@@ -27,7 +27,7 @@ class '.$controllerName.'{
     * This is a sample method, the idea is to fill the $args array
     * with all the data you need to have available in your view
     **/
-    function render<slug>(){
+    function renderPost(){
         
         //this array will contain all your data
         $args = [];
