@@ -4,12 +4,15 @@ WordPress Dash has a simple interface to create Custom post Types
 
 ```php
     use \WPAS\Types\PostTypesManager;
-    $namespace = '\php\Types\\';
-    
     $postTypeManager = new PostTypesManager([
-        'course:'.$namespace.'CoursePostType',
-        ...
+        'namespace' => '\php\Types\\'
     ]);
+    //You can react a new custom post type and specify his class
+    $postTypeManager->newType(['type' => 'course', 'class' => 'CoursePostType'])->register();
+    
+    //You can create a class for an already created post
+    $postTypeManager->newType(['type' => 'post', 'class' => 'PostPostType'])->register();
+    
 ```
 
 You can add as many Custom Post Types as you want, but you also need to add the model to the Model/ directory
@@ -33,7 +36,12 @@ Then, you can use your model inside your controller like this:
         public function renderCourse(){
             
             $args = [];
+            //get a particular post by id
             $args['courses'] = CoursePostType::get(1);
+            
+            //get all posts
+            $args['courses'] = CoursePostType::all();
+            
             return $args;//Always return an Array type
         }
         
