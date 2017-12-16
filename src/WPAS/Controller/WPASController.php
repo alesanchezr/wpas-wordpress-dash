@@ -50,7 +50,7 @@ class WPASController{
         }
     
     }
-
+    
     function doingAJAX(){
 		if(!defined('DOING_AJAX')) return false;
 		else return true;
