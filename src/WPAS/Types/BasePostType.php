@@ -12,7 +12,7 @@ class BasePostType extends PostType{
     function __construct(){
         $args = func_get_args();
         
-        $postType = $args[0];
+        self::$postType = $args[0];
         
         call_user_func_array(array('parent', '__construct'), $args);
         
