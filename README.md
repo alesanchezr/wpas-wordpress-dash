@@ -1,5 +1,19 @@
 NOTICE: This library is still on early development, it was tested in a few websites but I'm still working to make it extremely easy to use and very "WordPress Styled".
 
+**Note:** This library expects your theme to load the _vendor/autoload.php_ file in your _functions.php_. A good way of doing that is:
+
+```php
+/**
+* Autoload for PHP Composer and definition of the ABSPATH
+*/
+
+//defining the absolute path for the wordpress instalation.
+if ( !defined('ABSPATH') ) define('ABSPATH', dirname(__FILE__) . '/');
+
+//including composer autoload
+require ABSPATH."vendor/autoload.php";
+```
+
 # WPAS-Wordpress-Dash
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
@@ -14,7 +28,7 @@ Are you a WordPress developer? Then you are probably struggling with the same st
 $ composer require alesanchezr/wpas-wordpress-dash:dev-master
 ```
 
-2. Create a new theme using the installation script
+2. Create a new theme using the installation script. Or select an already created theme (it will try to create the folder structure automatically)
 ```sh
 $ php vendor/alesanchezr/wpas-wordpress-dash/run.php <your_theme_directory_name>
 ```
@@ -29,6 +43,8 @@ $controller = new WPASController([
 ```
 
 ### Working with the MVC Pattern
+
+To create Types (
 
 Create your ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
 ```php
