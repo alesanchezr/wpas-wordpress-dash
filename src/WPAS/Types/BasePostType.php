@@ -17,10 +17,12 @@ class BasePostType extends PostType{
         
         call_user_func_array(array('parent', '__construct'), $args);
         
+        $this->populate_fields();
         $this->initialize();
     }
     
     public function initialize(){}
+    public function populate_fields(){}
     
     public static function all($args=[], $hook=null){
         if(empty(self::$postType)) throw new WPASException('Please instanciete the class '.get_called_class().' at least one time before using it');
