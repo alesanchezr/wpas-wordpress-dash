@@ -51,7 +51,7 @@ class WPASController{
         }
     
     }
-
+    
     function doingAJAX(){
 		if(!defined('DOING_AJAX')) return false;
 		else return true;
@@ -154,7 +154,7 @@ class WPASController{
         $controller = $args['controller'];
         $closureIndex = $controller;
         if($this->is_closure($controller)){
-            if(!isset($args['action']))  throw new WPASException('Since your controller for '.$view.' is a closure, your need to specify the ajax "action"');
+
             $closureIndex = spl_object_hash($controller);
             $this->closures[$closureIndex] = [
                 'action' => $args['action'],

@@ -1,17 +1,72 @@
 NOTICE: This library is still on early development, it was tested in a few websites but I'm still working to make it extremely easy to use and very "WordPress Styled".
 
+**Note:** This library expects your theme to load the _vendor/autoload.php_ file in your _functions.php_. A good way of doing that is:
+
+```php
+/**
+* Autoload for PHP Composer and definition of the ABSPATH
+*/
+
+//defining the absolute path for the wordpress instalation.
+if ( !defined('ABSPATH') ) define('ABSPATH', dirname(__FILE__) . '/');
+
+//including composer autoload
+require ABSPATH."vendor/autoload.php";
+```
+
 # WPAS-Wordpress-Dash
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
-1. Better AJAX.
-2. MVC Pattern implementation (Model-View-Controller).
+1. MVC Pattern implementation (Model-View-Controller) in WordPress.
+2. Better AJAX in WordPress.
 
 ### Installation
-```php
-$ composer install alesanchezr/wpas-wordpress-dash
+
+1. Require the library with composer
+```sh
+$ composer require alesanchezr/wpas-wordpress-dash:dev-master
 ```
 
+2. Create a new theme using the installation script. Or select an already created theme (it will try to create the folder structure automatically)
+```sh
+$ php vendor/alesanchezr/wpas-wordpress-dash/run.php <your_theme_directory_name>
+```
+
+4. Update the WPASController according to your needs in functions.php
+```php
+use \WPAS\Controller\WPASController;
+$controller = new WPASController([
+        //Here you specify the path to your consollers folder
+        'namespace' => 'php\\Controllers\\'
+    ]);
+```
+
+### Working with the MVC Pattern
+
+To create Types (
+
+Create your ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
+```php
+//Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
+$controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
+```
+Our Course.php controller class will look like this:
+
+```php
+namespace php\Controllers;
+class Course{
+    
+    public function renderCourse(){
+        
+        $args = [];
+        $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
+        return $args;//Always return an Array type
+    }
+    
+}
+```
+[Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
 ### Working with AJAX
 
@@ -21,42 +76,18 @@ Add one MVC-like route for each AJAX request:
 //Using a 'General' controller class to process the 'newsletter_signup' ajax action in the page with the slug 'contact-us'
 $controller->routeAjax([ 'slug' => 'Page:contact-us', 'controller' => 'General:newsletter_signup' ]);  
 
-//Instead, you can use a closure if you like
+//Or Instead, you can use a closure if you like
 $controller->routeAjax([ 'slug' => 'Category:news', 'controller' => function(){
 
     //here goes the script to fetch for the data
     $data['variable1'] = 'Hello World';
     return $data;
-]);
+}]);
 ```
 
 [Continue reading about Working with AJAX](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
-### Simple MVC Pattern
-
-Create ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
-
-```php
-//Here we are saying that we have a class Course.php with a function getCourseInfo that fetches the data needed to render any custom post tipe course
-$controller->route([ 'slug' => 'Single:course', 'controller' => 'Course' ]);  
-```
-Our Course.php controller will look like this:
-
-```php
-class Course{
-    
-    public function getCourseInfo(){
-        
-        $args = [];
-        $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
-        return $args;
-    }
-    
-}
-```
-[Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
-
-## Upcomming Experimental Features
+## Upcomming Experimental Features (Not Stable)
 
 1. Add WordPress roles programatically.
 2. Restrict Role Access to particular pages, posts, categories, etc.

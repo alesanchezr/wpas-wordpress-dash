@@ -8,40 +8,47 @@ use WPAS\Utils\WPASException;
 class PostTypesManager{
     
     private $customTypes = [];
+    private $options = [];
     
-    function __construct($customTypes){
+    function __construct($options){
         
-        if(empty($customTypes)) throw new WPASException('You have to specify an array of the types your site will have');
-        $this->createPostsTypes($customTypes);
+        $this->options = [
+            'namespace' => '\\',
+            ];
+        $this->loadOptions($options);
     }
     
-    private function createPostsTypes($customTypes){
-        foreach($customTypes as $type){
-            $classPath = $this->getClassPath($type);
-            if(is_array($classPath)) $this->customTypes[] = $this->createInstance($classPath);
-            else $this->customTypes[] = new BasePostType($classPath);
-        }
+    private function loadOptions($options){
+        foreach($this->options as $key => $val) 
+            if(isset($options[$key])) 
+                $this->options[$key] = $options[$key];
+                
     }
     
-    private function createInstance($classPath){
+    public function newType($typeDetails){
         
-        $pt = new $classPath[1]($classPath[0]);
-        if(!is_subclass_of($classPath[1], 'WPAS\Types\BasePostType')) throw new WPASException('Your class '.$classPath[1].' has to inherit from \WPAS\Types\BasePostType');
-/*
-        if(is_callable([$v,'render'.$view])){
-            self::$args = call_user_func([$v,'render'.$view]);
-            if(is_null(self::$args) && WP_DEBUG) echo '<p style="margin-top:50px;margin-bottom:0px;" class="alert alert-warning">Warning: the render method is returning null!</p>';
-        }
-        else throw new WPASException('Render method for view '.$view.' does not exists in '.$controller);*/
+        if(empty($typeDetails['type'])) throw new WPASException('You need to specify the type of your Custom Post');
+        if(empty($typeDetails['class'])) throw new WPASException('You need to specify the class path for your Custom Post');
         
+        $options = null;
+        if(!empty($typeDetails['options'])) $options = $typeDetails['options'];
+        
+        $classPath = $this->options['namespace'].$typeDetails['class'];
+        
+        $newType = $this->createInstance($typeDetails['type'], $classPath, $options);
+        $this->customTypes[] = $newType;
+        return $newType;
+    }
+    
+    private function createInstance($type, $classPath, $options){
+        
+        if(!class_exists($classPath)) throw new WPASException('Your class '.$classPath.' cour not be found, check your autoload?');
+        if(!is_subclass_of($classPath, 'WPAS\Types\BasePostType')) throw new WPASException('Your class '.$classPath.' has to inherit from \WPAS\Types\BasePostType');
+        
+        $pt = null;
+        if(is_array($options)) $pt = new $classPath($type, $options);
+        else $pt = new $classPath($type);
         return $pt;
-    }
-    
-    private function getClassPath($path){
-        $pieces = explode(':',$path);
-        if(count($pieces)==1) return $pieces[0];
-        else if(count($pieces)==2) return [$pieces[0],$pieces[1]];
-        else throw new WPASException('Invalid custom post type: '.$path);
     }
     
 }
