@@ -7,12 +7,11 @@
             // if true you can add CSS classes to the submit form
             'submit-button-class' => true, 
             
-            
-            
-            //if true it will populate form every dynamic fiel "wpas_language" with current polylang language
+            //if true it will populate form every dynamic field "wpas_language" with current polylang language
             'populate-current-language' => true, 
             
-            
+            //if you are using adwords, you will be able to populate the gclid by using "wpas_gclid" on dynamic fields
+            'populate-adwords-gclid' => true, 
             
             //if true it will prepare the inputs for boptstrap
             'bootstrap4-styles' => true, 

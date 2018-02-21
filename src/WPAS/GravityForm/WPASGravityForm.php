@@ -3,6 +3,7 @@
 namespace WPAS\GravityForm;
 
 use WPAS\GravityForm\Fields\BaseGravityFormField;
+use WPAS\Controller\WPASController;
 use GFForms;
 
 class WPASGravityForm{
@@ -22,7 +23,8 @@ class WPASGravityForm{
             add_filter( 'gform_add_field_buttons', [$this,'add_fields'] );
         } 
         
-        if(!empty($settings['populate-current-language'])) add_filter("gform_field_value_wpas_language", [$this,'new_form_default_values']);
+        if(!empty($settings['populate-current-language'])) add_filter("gform_field_value_wpas_language", [$this,'get_language_value']);
+        if(!empty($settings['populate-adwords-gclid'])) add_filter("gform_field_value_wpas_gclid", [$this,'get_gclid_value']);
         
         if(!empty($settings['bootstrap4-styles'])) add_filter( 'gform_field_container', [$this,'add_bootstrap_container_class'], 10, 6 );
     }
@@ -54,7 +56,7 @@ class WPASGravityForm{
         return new BaseGravityFormField($type,$value);
     }
     
-    public function new_form_default_values($value){
+    public function get_language_value($value){
         
         if(function_exists('pll_current_language')){
             return pll_current_language();
@@ -62,6 +64,15 @@ class WPASGravityForm{
         else{
             return null;
         }
+        
+    }
+    public function get_gclid_value($value){
+        
+        $WPAS_APP = WPASController::get_context();
+        
+        if(isset($_GET['gclid'])) return $_GET['gclid'];
+        else if(isset($WPAS_APP['gclid'])) return $WPAS_APP['gclid'];
+        else return null;
         
     }
     

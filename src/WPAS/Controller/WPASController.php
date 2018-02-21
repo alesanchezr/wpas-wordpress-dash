@@ -17,6 +17,7 @@ class WPASController{
     private $routes = [];
     private $options = [];
     private $closures = [];
+    private static $transientsDuration = 18000;// 30min * 60sec = 1800 sec.
     
     public static $ajaxController = null;
     static protected $args = [];
@@ -42,7 +43,7 @@ class WPASController{
             add_action ( 'wp_head', function(){ ?>
                 <script type="text/javascript">
                     /* <![CDATA[ */
-                    var WPAS_APP = <?php echo json_encode($this->loadJavascriptVariables(), JSON_PRETTY_PRINT); ?>
+                    var WPAS_APP = <?php echo json_encode($this->loadGlobalContext(), JSON_PRETTY_PRINT); ?>
                     /* ]]> */
                 </script>
                 <?php
@@ -197,18 +198,27 @@ class WPASController{
         }
     }
     
-    private function loadJavascriptVariables(){
+    private function loadGlobalContext(){
 
         $context = TemplateContext::getContext();
 	    $data = [];
 	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
-        $data['ajax_url'] = admin_url( 'admin-ajax.php' );
+        $data['ajax_url'] = '/wp-admin/admin-ajax.php';
         $data['view'] = $context;
         $data['url'] = $this->getCurrentURL();
         $data['controller'] = self::getAjaxController();
+		
+		//storing the google adwords gclid on the session (if available)
+		if(isset($_GET['gclid'])){
+		    $data['gclid'] = $_GET['gclid'];
+		    //print_r($data['gclid']); die();
+		}
+			
         $data = apply_filters( 'wpas_js_global_variables', $data );
         
-        return $data;
+        $oldData = self::get_context();
+        $newData = self::set_context(array_merge($oldData, $data));
+        return $newData;
     }
     
     private function getCurrentURL(){
@@ -290,5 +300,24 @@ class WPASController{
     public static function getViewData(){
         if(is_array(self::$args) && empty(self::$args['wp_query'])) self::$args['wp_query'] = get_queried_object();
         return self::$args;
+    }
+    
+    private static function set_context($data){
+        
+        $cookie_value = json_encode($data);
+
+        setcookie('wpas_app', $cookie_value, time() + self::$transientsDuration, COOKIEPATH, COOKIE_DOMAIN);
+        
+        return $data;
+    }
+    
+    public static function get_context(){
+        if(!isset($_COOKIE['wpas_app'])) return [];
+        else{
+            $WPAS_APP = (array) json_decode(stripslashes($_COOKIE['wpas_app']));
+
+            if($WPAS_APP) return $WPAS_APP;
+            else throw new WPASException('Imposible to retreive encode cookie: '.$_COOKIE['wpas_app']);
+        }
     }
 }
