@@ -214,7 +214,7 @@ class WPASController{
 		    //print_r($data['gclid']); die();
 		}
 			
-        $data = apply_filters( 'wpas_js_global_variables', $data );
+        $data = apply_filters( 'wpas_fill_content', $data );
         
         $oldData = self::get_context();
         $newData = self::set_context(array_merge($oldData, $data));

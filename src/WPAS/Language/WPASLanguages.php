@@ -25,7 +25,7 @@ class WPASLanguages{
 		
 		self::$currentLanguage = pll_current_language();
 		
-		add_filter('wpas_js_global_variables', function($data){
+		add_filter('wpas_fill_content', function($data){
 			$data['lang'] = self::$currentLanguage;
 			return $data;
 		},10,1);

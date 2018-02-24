@@ -1,22 +1,34 @@
 # GravityForms
 
+## Accessing the global context as dynamic form fields
+
+By activating the GravityForms configuration you are able to access any global context variable
+from the dynamic fields inside the gravity forms by prepending "wpas_" to the variable name, for example:
+```
+var WPAS_APP = {
+    "ajax_url": "\/wp-admin\/admin-ajax.php",
+    "view": {
+        "type": "page",
+        "slug": "apply",
+        "template": ""
+    },
+    "url": "https:\/\/academy-web-alesanchezr.c9users.io\/apply",
+    "controller": "",
+    "lang": "en"
+} 
+```
+
+To have the language on your form you have to add "wpas_lang" or to have the view type you add "wpas_view.type"
+
+## Adittional Settings
 ```php
         $gfManager = new WPASGravityForm([
-            
             
             // if true you can add CSS classes to the submit form
             'submit-button-class' => true, 
             
-            //if true it will populate form every dynamic field "wpas_language" with current polylang language
-            'populate-current-language' => true, 
-            
-            //if you are using adwords, you will be able to populate the gclid by using "wpas_gclid" on dynamic fields
-            'populate-adwords-gclid' => true, 
-            
             //if true it will prepare the inputs for boptstrap
             'bootstrap4-styles' => true, 
-            
-            
             
             //A new type of input, similar to the combobox but with a "button group" style
             'fields' => [
