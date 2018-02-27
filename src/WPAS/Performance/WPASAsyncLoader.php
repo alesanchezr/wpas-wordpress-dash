@@ -31,7 +31,7 @@ class WPASAsyncLoader{
         self::$insideAdmin = is_admin();
         if(!self::$insideAdmin){
             
-            if(!empty($options['leave-scripts-alone'])) $leaveScriptsAlone = $options['leave-scripts-alone'];
+            if(!empty($options['leave-scripts-alone'])) self::$leaveScriptsAlone = $options['leave-scripts-alone'];
             
             if(empty($options['debug'])) $options['debug'] = false;
             if(!empty($options['force-jquery'])){
@@ -222,7 +222,6 @@ class WPASAsyncLoader{
                     
             }
             
-            if($this->settings['load-jquery'])
             if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
         }
         

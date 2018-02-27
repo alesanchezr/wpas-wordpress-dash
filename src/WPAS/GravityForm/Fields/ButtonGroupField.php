@@ -30,8 +30,8 @@ class ButtonGroupField extends \GF_Field{
         $html = '<label class="gfield_label" for="input_'.$this->id.'_'.$form_id.'">'.$this->label.'</label>';
         $html .= '<div class="wpas-button-group card-columns '.$css.'" data-target="#wpas-button-group'.$this->id.'">';
         if($this->choices) foreach ($this->choices as $c) $html .= '<div href="#" class="card wpas-button-group-btn" data-value="'.$c['value'].'">'.$c['text'].'</div>';
-        $html .= '<input type="hidden" id="wpas-button-group'.$this->id.'" value="'.$value.'" />';
         $html .= '</div>';
+        $html .= '<input type="hidden" id="wpas-button-group'.$this->id.'" value="'.$value.'" />';
                     
         return $html;
     }
@@ -89,7 +89,7 @@ class ButtonGroupField extends \GF_Field{
 		$use_value       = $modifier == 'value';
 		$use_price       = in_array( $modifier, array( 'price', 'currency' ) );
 		$format_currency = $modifier == 'currency';
-
+        //print_r($raw_value); die();
 		if ( is_array( $raw_value ) && (string) intval( $input_id ) != $input_id ) {
 			$items = array( $input_id => $value ); //float input Ids. (i.e. 4.1 ). Used when targeting specific checkbox items
 		} elseif ( is_array( $raw_value ) ) {
@@ -125,7 +125,7 @@ class ButtonGroupField extends \GF_Field{
 
 	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) {
 		$return = esc_html( $value );
-		$selection = GFCommon::selection_display( $return, $this, $currency, $use_text );
+		$selection = \GFCommon::selection_display( $return, $this, $currency, $use_text );
 		return $selection;
 	}
 
