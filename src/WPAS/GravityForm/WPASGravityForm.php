@@ -14,13 +14,15 @@ class WPASGravityForm{
 
         GFForms::include_addon_framework();
         
-        if(!empty($settings['submit-button-class']))
+        if(!empty($settings['submit-button-class'])) $customSubmit = new CustomSubmitButton();
         
-        $customSubmit = new CustomSubmitButton();
         if(!empty($settings['fields'])){
             
             $this->fields = $settings['fields'];
-            add_filter( 'gform_add_field_buttons', [$this,'add_fields'] );
+            $this->add_fields();
+            
+            add_filter( 'gform_add_field_buttons', [$this,'add_fields_group'] );
+            add_action( "gform_register_init_scripts", [$this,"display_form_scripts"] );
         }
         
         add_filter("gform_field_value", [$this,'populate_gform_fields'],3,10);
@@ -34,11 +36,40 @@ class WPASGravityForm{
       return '<li id="' . $field_id . '" class="' . $css_class . ' form-group">{FIELD_CONTENT}</li>';
     }
     
-    public function add_fields($field_groups){
+    private function classFactory($type){
+        if(!preg_match('/^[a-z][-a-z0-9]*$/', $type)) throw new WPASException('The field type must start with a letter and contain only letters or -');
+        
+        $classNameParts = explode("-", $type);
+        $classNameParts = array_map(function($part){ 
+            return ucfirst($part); 
+        },$classNameParts);
+        $className = implode($classNameParts);
+        
+        return 'WPAS\\GravityForm\\Fields\\'.$className.'Field';
+    }
+    
+    private function getFieldMetaInfo($type, $label){
+        return [
+            'class' => 'button', 
+            'data-type' => $type, 
+            'value' => __( $label, 'gravityforms' ),
+            'onclick'   => "StartAddField('".$type."');"
+        ];
+    }
+    
+    public function add_fields(){
         
         for($i=0; $i<count($this->fields); $i++){
-            $field = $this->createField($this->fields[$i]['type'],$this->fields[$i]['label']);
-            $this->fields[$i] = $field->getMetaInfo();
+            $fieldClassName = $this->classFactory($this->fields[$i]['type']);
+            \GF_Fields::register( new $fieldClassName() );
+        }
+        
+    }
+    
+    public function add_fields_group($field_groups){
+        
+        for($i=0; $i<count($this->fields); $i++){
+            $this->fields[$i] = $this->getFieldMetaInfo($this->fields[$i]['type'],$this->fields[$i]['label']);
         }
         
         array_push($field_groups,[
@@ -51,8 +82,27 @@ class WPASGravityForm{
         return $field_groups;
     }
     
-    private function createField($type, $value){
-        return new BaseGravityFormField($type,$value);
+    public function display_form_scripts($form){
+            //Add all textarea settings to the "TOS" field plus custom "tos_setting"
+            // fieldSettings["tos"] = fieldSettings["textarea"] + ", .tos_setting"; // this will show all fields that Paragraph Text field shows plus my custom setting
+            
+            // from forms.js; can add custom "tos_setting" as well
+            //fieldSettings["tos"] = ".label_setting, .description_setting, .admin_label_setting, .size_setting, .default_value_textarea_setting, .error_message_setting, .css_class_setting, .visibility_setting, .tos_setting"; //this will show all the fields of the Paragraph Text field minus a couple that I didn’t want to appear.
+            
+            //binding to the load field settings event to initialize the checkbox
+            //$(document).bind("gform_load_field_settings", function(event, field, form){
+            //        jQuery("#field_tos").attr("checked", field["field_tos"] == true);
+            //        $("#field_tos_value").val(field["tos"]);
+            //});
+            $script = "\n\n jQuery('.wpas-button-group .wpas-button-group-btn').click(function(evt){
+                     jQuery('.wpas-button-group .wpas-button-group-btn').removeClass('card-inverse');
+                     jQuery(this).addClass('card-inverse');
+                     let value = jQuery(this).attr('data-value');
+                     $(jQuery(this).parent().attr('data-target')).val(value);
+                     evt.preventDefault();
+                     return false;
+                 });";
+        \GFFormDisplay::add_init_script( $form['id'], 'format_money', \GFFormDisplay::ON_PAGE_RENDER, $script );
     }
     
     private function getPllLanguageValue(){
