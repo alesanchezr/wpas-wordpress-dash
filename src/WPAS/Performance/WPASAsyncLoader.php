@@ -14,6 +14,7 @@ class WPASAsyncLoader{
     private static $criticalStyles = [];
     private static $scripts = [];
     private static $styles = [];
+    private static $forceJquery = false;
     private static $loadedStyleCount = 0;
     private static $publicUrl = '';
     private static $ready = false;
@@ -33,6 +34,9 @@ class WPASAsyncLoader{
             if(!empty($options['leave-scripts-alone'])) $leaveScriptsAlone = $options['leave-scripts-alone'];
             
             if(empty($options['debug'])) $options['debug'] = false;
+            if(!empty($options['force-jquery'])){
+                self::$forceJquery = true;
+            } 
             
             if(!empty($options['public-url'])){
                 self::$publicUrl = $options['public-url'];
@@ -73,10 +77,13 @@ class WPASAsyncLoader{
     }            
     
     public function remove_previous_styles(){
-        
+
         if (!self::$insideAdmin && !self::is_login_page() && !self::$leaveScriptsAlone) {
-            wp_deregister_script('jquery');
-            wp_register_script('jquery', '', '', '', true);     
+            if(!self::$forceJquery)
+            {
+                wp_deregister_script('jquery');
+                wp_register_script('jquery', '', '', '', true);     
+            }
             wp_deregister_script( 'wp-embed' ); 
        }
     }
@@ -215,7 +222,7 @@ class WPASAsyncLoader{
                     
             }
             
-            
+            if($this->settings['load-jquery'])
             if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
         }
         
