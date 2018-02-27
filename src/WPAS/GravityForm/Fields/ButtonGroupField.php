@@ -32,9 +32,13 @@ class ButtonGroupField extends \GF_Field{
         $field_id        = $is_admin || $form_id == 0 ? "input_{$this->id}" : 'input_' . $form_id . "_{$this->id}";
         
         $css = isset( $this->cssClass ) ? $this->cssClass :'';
+
         $html = '<label class="gfield_label" for="'.$field_id.'">'.$this->label.'</label>';
         $html .= '<div class="wpas-button-group card-columns '.$css.'" data-target="#'.$field_id.'">';
-        if($this->choices) foreach ($this->choices as $c) $html .= '<div href="#" class="card wpas-button-group-btn" data-value="'.$c['value'].'">'.$c['text'].'</div>';
+        if($this->choices) foreach ($this->choices as $c){
+            $choice_selected = ($c['value'] == $value);
+            $html .= '<div href="#" class="card wpas-button-group-btn '.($choice_selected ? 'card-inverse':'').'" data-value="'.$c['value'].'">'.$c['text'].'</div>';
+        } 
         $html .= '</div>';
         $html .= '<input type="hidden" name="input_'.$id.'" id="'.$field_id.'" value="'.$value.'" />';
                     
