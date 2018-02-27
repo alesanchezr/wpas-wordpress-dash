@@ -89,11 +89,11 @@ class ButtonGroupField extends \GF_Field{
 	}
 
 	public function get_choices( $value ) {
-		return GFCommon::get_select_choices( $this, $value );
+		return \GFCommon::get_select_choices( $this, $value );
 	}
 
 	public function get_value_entry_list( $value, $entry, $field_id, $columns, $form ) {
-		return GFCommon::selection_display( $value, $this, $entry['currency'] );
+		return \GFCommon::selection_display( $value, $this, $entry['currency'] );
 	}
 	
 	public function get_value_merge_tag( $value, $input_id, $entry, $form, $modifier, $raw_value, $url_encode, $esc_html, $format, $nl2br ) {
@@ -119,21 +119,21 @@ class ButtonGroupField extends \GF_Field{
 			} elseif ( $use_price ) {
 				list( $name, $val ) = rgexplode( '|', $item, 2 );
 				if ( $format_currency ) {
-					$val = GFCommon::to_money( $val, rgar( $entry, 'currency' ) );
+					$val = \GFCommon::to_money( $val, rgar( $entry, 'currency' ) );
 				}
 			} elseif ( $this->type == 'post_category' ) {
 				$use_id     = strtolower( $modifier ) == 'id';
-				$item_value = GFCommon::format_post_category( $item, $use_id );
+				$item_value = \GFCommon::format_post_category( $item, $use_id );
 
-				$val = RGFormsModel::is_field_hidden( $form, $this, array(), $entry ) ? '' : $item_value;
+				$val = \RGFormsModel::is_field_hidden( $form, $this, array(), $entry ) ? '' : $item_value;
 			} else {
-				$val = RGFormsModel::is_field_hidden( $form, $this, array(), $entry ) ? '' : RGFormsModel::get_choice_text( $this, $raw_value, $input_id );
+				$val = \RGFormsModel::is_field_hidden( $form, $this, array(), $entry ) ? '' : \RGFormsModel::get_choice_text( $this, $raw_value, $input_id );
 			}
 
-			$ary[] = GFCommon::format_variable_value( $val, $url_encode, $esc_html, $format );
+			$ary[] = \GFCommon::format_variable_value( $val, $url_encode, $esc_html, $format );
 		}
 
-		return GFCommon::implode_non_blank( ', ', $ary );
+		return \GFCommon::implode_non_blank( ', ', $ary );
 	}
 
 	public function get_value_entry_detail( $value, $currency = '', $use_text = false, $format = 'html', $media = 'screen' ) {
@@ -149,6 +149,6 @@ class ButtonGroupField extends \GF_Field{
 
 		$value = rgar( $entry, $input_id );
 
-		return $is_csv ? $value : GFCommon::selection_display( $value, $this, rgar( $entry, 'currency' ), $use_text );
+		return $is_csv ? $value : \GFCommon::selection_display( $value, $this, rgar( $entry, 'currency' ), $use_text );
 	}
 }
