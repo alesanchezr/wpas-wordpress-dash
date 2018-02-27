@@ -2,6 +2,8 @@
 
 namespace WPAS\GravityForm\Fields;
 
+use WPAS\Utils\WPASException;
+
 class ButtonGroupField extends \GF_Field{
     
     public $type = 'button-group';
@@ -24,14 +26,17 @@ class ButtonGroupField extends \GF_Field{
     public function get_field_input( $form, $value = '', $entry = null ) {
         $form_id         = $form['id'];
         $is_entry_detail = $this->is_entry_detail();
+        $is_form_editor  = $this->is_form_editor();
+        $is_admin        = $is_entry_detail || $is_form_editor;
         $id              = (int) $this->id;
-
+        $field_id        = $is_admin || $form_id == 0 ? "input_{$this->id}" : 'input_' . $form_id . "_{$this->id}";
+        
         $css = isset( $this->cssClass ) ? $this->cssClass :'';
-        $html = '<label class="gfield_label" for="input_'.$this->id.'_'.$form_id.'">'.$this->label.'</label>';
-        $html .= '<div class="wpas-button-group card-columns '.$css.'" data-target="#wpas-button-group'.$this->id.'">';
+        $html = '<label class="gfield_label" for="'.$field_id.'">'.$this->label.'</label>';
+        $html .= '<div class="wpas-button-group card-columns '.$css.'" data-target="#'.$field_id.'">';
         if($this->choices) foreach ($this->choices as $c) $html .= '<div href="#" class="card wpas-button-group-btn" data-value="'.$c['value'].'">'.$c['text'].'</div>';
         $html .= '</div>';
-        $html .= '<input type="hidden" id="wpas-button-group'.$this->id.'" value="'.$value.'" />';
+        $html .= '<input type="hidden" name="input_'.$id.'" id="'.$field_id.'" value="'.$value.'" />';
                     
         return $html;
     }
@@ -44,7 +49,9 @@ class ButtonGroupField extends \GF_Field{
         $field_label     = $this->get_field_label( $force_frontend_label, $value );
         $field_id        = $is_admin || $form_id == 0 ? "input_{$this->id}" : 'input_' . $form_id . "_{$this->id}";
         
-        if(!$is_admin) $field_content = '{FIELD}';
+        $validation_message = ( $this->failed_validation && ! empty( $this->validation_message ) ) ? sprintf( "<div class='gfield_description validation_message'>%s</div>", $this->validation_message ) : '';
+        
+        if(!$is_admin) $field_content = '{FIELD}'.$validation_message;
         else{
             $field_content = sprintf( "%s{FIELD}", $admin_buttons );
         }
@@ -84,12 +91,14 @@ class ButtonGroupField extends \GF_Field{
 	public function get_value_entry_list( $value, $entry, $field_id, $columns, $form ) {
 		return GFCommon::selection_display( $value, $this, $entry['currency'] );
 	}
-
+	
 	public function get_value_merge_tag( $value, $input_id, $entry, $form, $modifier, $raw_value, $url_encode, $esc_html, $format, $nl2br ) {
+		
+		echo $input_id; die();
 		$use_value       = $modifier == 'value';
 		$use_price       = in_array( $modifier, array( 'price', 'currency' ) );
 		$format_currency = $modifier == 'currency';
-        //print_r($raw_value); die();
+
 		if ( is_array( $raw_value ) && (string) intval( $input_id ) != $input_id ) {
 			$items = array( $input_id => $value ); //float input Ids. (i.e. 4.1 ). Used when targeting specific checkbox items
 		} elseif ( is_array( $raw_value ) ) {

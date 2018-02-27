@@ -94,13 +94,14 @@ class WPASGravityForm{
             //        jQuery("#field_tos").attr("checked", field["field_tos"] == true);
             //        $("#field_tos_value").val(field["tos"]);
             //});
-            $script = "\n\n jQuery('.wpas-button-group .wpas-button-group-btn').click(function(evt){
-                     jQuery('.wpas-button-group .wpas-button-group-btn').removeClass('card-inverse');
-                     jQuery(this).addClass('card-inverse');
-                     let value = jQuery(this).attr('data-value');
-                     $(jQuery(this).parent().attr('data-target')).val(value);
-                     evt.preventDefault();
-                     return false;
+            $script = "\n\n 
+                    jQuery('.wpas-button-group .wpas-button-group-btn').click(function(evt){
+                    jQuery('.wpas-button-group .wpas-button-group-btn').removeClass('card-inverse');
+                    jQuery(this).addClass('card-inverse');
+                    let value = jQuery(this).attr('data-value');
+                    $(jQuery(this).parent().attr('data-target')).val(value);
+                    evt.preventDefault();
+                    return false;
                  });";
         \GFFormDisplay::add_init_script( $form['id'], 'format_money', \GFFormDisplay::ON_PAGE_RENDER, $script );
     }
