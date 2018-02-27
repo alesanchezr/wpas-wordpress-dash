@@ -27,7 +27,8 @@ class ButtonGroupField extends \GF_Field{
         $id              = (int) $this->id;
 
         $css = isset( $this->cssClass ) ? $this->cssClass :'';
-        $html = '<div class="wpas-button-group card-columns '.$css.'" data-target="#wpas-button-group'.$this->id.'">';
+        $html = '<label class="gfield_label" for="input_'.$this->id.'_'.$form_id.'">'.$this->label.'</label>';
+        $html .= '<div class="wpas-button-group card-columns '.$css.'" data-target="#wpas-button-group'.$this->id.'">';
         if($this->choices) foreach ($this->choices as $c) $html .= '<div href="#" class="card wpas-button-group-btn" data-value="'.$c['value'].'">'.$c['text'].'</div>';
         $html .= '<input type="hidden" id="wpas-button-group'.$this->id.'" value="'.$value.'" />';
         $html .= '</div>';
@@ -45,7 +46,7 @@ class ButtonGroupField extends \GF_Field{
         
         if(!$is_admin) $field_content = '{FIELD}';
         else{
-            $field_content = sprintf( "%s<label class='gfield_label' for='%s'>%s</label>{FIELD}", $admin_buttons, $field_id, esc_html( $field_label ) );
+            $field_content = sprintf( "%s{FIELD}", $admin_buttons );
         }
         
         return $field_content;
