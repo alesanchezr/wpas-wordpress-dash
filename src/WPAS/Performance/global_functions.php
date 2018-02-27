@@ -25,3 +25,13 @@ function wpas_load_styles($styles){
 function wpas_filter_manifest($url){
     return WPAS\Performance\WPASAsyncLoader::filter_manifest($url);
 }
+
+function wpas_minify_js($data){
+    $minifier = new \MatthiasMullie\Minify\CSS($data);
+    return $minifier->minify();
+}
+
+function wpas_minify_html($data){
+    $minifier = new \MatthiasMullie\Minify\HTML($data);
+    return $minifier->minify();
+}
