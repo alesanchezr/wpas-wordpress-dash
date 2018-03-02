@@ -63,7 +63,9 @@ class WPASAsyncLoader{
             if(!empty($options['styles'])) self::$styles = $options['styles'];
             
             //If debug=true I load the styles the old way
-            if($options['debug']) add_action('wp_enqueue_scripts',[$this,'loadDebuggableScriptsAndStyles']);
+            if($options['debug']){
+                add_action('wp_enqueue_scripts',[$this,'loadDebuggableScriptsAndStyles']);
+            }
             else{
                 //If we are not debugging I load the styles the new way
                 add_action('wpas_print_footer_scripts',[$this,'loadScriptsAsync']);
@@ -77,7 +79,6 @@ class WPASAsyncLoader{
     }            
     
     public function remove_previous_styles(){
-
         if (!self::$insideAdmin && !self::is_login_page() && !self::$leaveScriptsAlone) {
             if(!self::$forceJquery)
             {
@@ -206,7 +207,6 @@ class WPASAsyncLoader{
      * Loads the scripts the old traditional way
      **/
     public static function loadDebuggableScriptsAndStyles(){
-
         $currentPage = TemplateContext::getContext(self::$ready);
         if(!empty(self::$scripts))
         {
@@ -214,12 +214,14 @@ class WPASAsyncLoader{
             if($key){
                 $scripts = [];
                 $oldScript = [];
+                if(self::$forceJquery){
+                    wp_enqueue_script('jquery' , get_template_directory_uri().'/wp-includes/js/jquery/jquery.js?ver=1.12.4' , []);
+                } 
                 foreach(self::$scripts[$currentPage['type']][$key] as $script) 
                 {
                     wp_enqueue_script( $script, self::filter_manifest($script), $oldScript, '1.0.0', true );
                     $oldScript = [$script];
                 }
-                    
             }
             
             if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
