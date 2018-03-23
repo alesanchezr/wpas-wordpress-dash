@@ -25,7 +25,8 @@ class BasePostType extends PostType{
     public function populate_fields(){}
     
     public static function all($args=[], $hook=null){
-        if(empty(self::$postType)) throw new WPASException('Please instanciete the class '.get_called_class().' at least one time before using it');
+
+        if(empty(self::$postType)) throw new WPASException('Please register() the class '.get_called_class().' at least one time before using it');
         $args = array_merge($args,[
             'post_type' => self::$postType
             ]);
