@@ -38,7 +38,7 @@ Instanciate a new WPASController
 $controller = new \WPAS\Controller\WPASController();
 ```
 Define what controllers will take care of what templates using the [typical WordPress logic](https://developer.wordpress.org/themes/basics/template-files/)
-```
+```php
 $controller->route([ 'slug' => 'CustomPost:post_slug', 'controller' => 'MyController:method']);
 
 //your controller could also be a callback if you want

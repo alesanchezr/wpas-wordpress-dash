@@ -1,27 +1,12 @@
-NOTICE: This library is still on early development, it was tested in a few websites but I'm still working to make it extremely easy to use and very "WordPress Styled".
-
-**Note:** This library expects your theme to load the _vendor/autoload.php_ file in your _functions.php_. A good way of doing that is:
-
-```php
-/**
-* Autoload for PHP Composer and definition of the ABSPATH
-*/
-
-//defining the absolute path for the wordpress instalation.
-if ( !defined('ABSPATH') ) define('ABSPATH', dirname(__FILE__) . '/');
-
-//including composer autoload
-require ABSPATH."vendor/autoload.php";
-```
 
 # WPAS-Wordpress-Dash
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
 1. MVC Pattern implementation (Model-View-Controller) in WordPress.
-2. Better AJAX in WordPress.
+2. Create API's with WordPress very fast.
 
-### Installation
+## Installation
 
 1. Require the library with composer
 ```sh
@@ -42,9 +27,52 @@ $controller = new WPASController([
     ]);
 ```
 
-### Working with the MVC Pattern
+**Note:** This library expects your theme to load the _vendor/autoload.php_ file in your _functions.php_. A good way of doing that is:
 
-To create Types (
+```php
+/**
+* Autoload for PHP Composer and definition of the ABSPATH
+*/
+
+//defining the absolute path for the wordpress instalation.
+if ( !defined('ABSPATH') ) define('ABSPATH', dirname(__FILE__) . '/');
+
+//including composer autoload
+require ABSPATH."vendor/autoload.php";
+```
+
+## Working with the MVC Pattern
+
+### The Models (Custom Types)
+
+Instanciate the PostTypeManager:
+```php
+    use \WPAS\Types\PostTypesManager;
+    $typeManager = new PostTypesManager([
+        'namespace' => '\php\Types\\'
+    ]);
+```
+Define your type in functions.php
+```php
+    //You can react a new custom post type and specify his class
+    $typeManager->newType(['type' => 'your_type_slug', 'class' => 'AnyPostTypeModelClass'])->register();
+```
+Define your type class in the types folder:
+```php
+    namespace php\Types;
+    
+    use WPAS\Types\BasePostType;
+    
+    class AnyPostTypeModelClass extends BasePostType{
+    
+        //any method here
+    }
+```
+Note: you HAVE to extend from the BasePostType class, that is not optional.
+
+[Continue reading about the models](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Types)
+
+### The Controllers
 
 Create your ***Controller*** classes and bind them to your views, pages, categories, posts, etc.
 ```php
@@ -67,25 +95,6 @@ class Course{
 }
 ```
 [Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
-
-### Working with AJAX
-
-Add one MVC-like route for each AJAX request:
-
-```php
-//Using a 'General' controller class to process the 'newsletter_signup' ajax action in the page with the slug 'contact-us'
-$controller->routeAjax([ 'slug' => 'Page:contact-us', 'controller' => 'General:newsletter_signup' ]);  
-
-//Or Instead, you can use a closure if you like
-$controller->routeAjax([ 'slug' => 'Category:news', 'controller' => function(){
-
-    //here goes the script to fetch for the data
-    $data['variable1'] = 'Hello World';
-    return $data;
-}]);
-```
-
-[Continue reading about Working with AJAX](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
 
 ## Upcomming Experimental Features (Not Stable)
 
