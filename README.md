@@ -48,7 +48,7 @@ require ABSPATH."vendor/autoload.php";
 Instanciate the PostTypeManager:
 ```php
     $typeManager = new \WPAS\Types\PostTypesManager([
-        'namespace' => '\php\Types\\'
+        'namespace' => '\php\Types\\' \\this will be the path to your models folder
     ]);
 ```
 Define your type in functions.php
@@ -87,7 +87,7 @@ class Course{
         
         $args = [];
         $args['course'] = WP_Query(['post_type' => 'course', 'param2' => 'value2', ...);
-        return $args;//Always return an Array type
+        return $args; //Always return an Array type
     }
     
 }
