@@ -1,107 +1,56 @@
-# Controller
+# MVC for WordPress
 
-1. Setup your routing rules
+There are 2 ways of working with WordPress MVC:
+1. API-Oriented: Create a WordPress API and consume it using React, Angular, Vue or Vanilla Javascript.
+2. Monolithic: Create templates in WordPress.
+
+## Creating an API's using MVC
+
+Start instanciating a new WPAS_API_Controller class:
+
 ```php
-use \WPAS\Controller\WPASController;
-$controller = new WPASController([
-    //options (optional)
-]);
+    $api = new \WPAS\Controller\WPASAPIController([
+        'application_name' => '4gwebsite',
+        'version' => 1
+    ]);
+    
+```
+Then, start defining your API endpoints:
+```php
+//get,post,put,delete
+$api->get(['path' => '/events', 'controller' => 'MyController:method']);
 
-//Using a "Blog" controller class to fetch the information needed for the "news" category
-$controller->route([ 'slug' => 'Category:news', 'controller' => 'Blog']);
+//you can use a function as controller instead of a whole class
+$api->get(['path' => '/events', 'controller' => function(){
+        return  TF\Types\CoursePostType::all()->posts;
+    }]);
+```
 
-//You can also use a closure if you want
-$controller->route([ 'slug' => 'Category:news', 'controller' => function(){
+Here is more information on how to create API enpoints using WordPress Dash
+[https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/API.md](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/API.md)
 
-    //here goes the script to fetch for the data
-    $data['variable1'] = 'Hello World';
-    return $data;
+If you want variables in your path, [read here](https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/#path-variables).
+
+## MVC Monolithic approach:
+
+Instanciate a new WPASController
+```php
+$controller = new \WPAS\Controller\WPASController();
+```
+Define what controllers will take care of what templates using the [typical WordPress logic](https://developer.wordpress.org/themes/basics/template-files/)
+```
+$controller->route([ 'slug' => 'CustomPost:post_slug', 'controller' => 'MyController:method']);
+
+//your controller could also be a callback if you want
+$controller->route([ 'slug' => 'CustomPost:post_slug', 'controller' => function(){
+
+    return $viewData;
 }]);
-
 ```
 
-Note: This are the options you can pass when creating the controller
+Here is more information on how to create monolithics MVC websites using WordPress Dash
+[https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/MONOLITHIC.md](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/MONOLITHIC.md)
 
-```php
-        $this->options = [
-            'mainscript' => null, //path to the main js that will handle all JS requests
-            'data' => null, //if you want to append data to the WPAS_APP object available in js
-            'mainscript-requierments' => [], //if the main js requiers any other js to be loaded first
-            'namespace' => '', //if you are using a controller class instrad of a closure (anonimus function)
-            ];
-```
-
-2. Request all the data you need to render the template using une function
-```php
-
-//This returns a semantic array with everything
-$args = wpas_get_view_data();
-
-echo $data['variable1']; //print the variable that came from the controller
-
-echo $data['wp_query']; //in case you need the Queried Object (default loop) it is available in the 'wp_query' key
-
-```
-
-## Working with AJAX
-
-1. Start by specifiying every AJAX request you will do
-```php
-//Using a 'General' controller class to process the 'newsletter_signup' ajax action in 'all' views
-$controller->routeAjax([ 'slug' => 'all', 'controller' => 'General:newsletter_signup' ]);  
-```
-
-1. Do your ajax call inside any of your enqueued javascript files
-```js
-        var requestData = { 
-            action: 'signup',
-            //any other params you want to send in the request
-            foo: var
-        };
-
-        $.ajax({
-            action: 'post',
-            url: WPAS_APP.ajax_url,
-            data: requestData,
-            result: function(responseData){
-                console.log(responseData);
-            }
-        });
-```
-Note: The WPAS_APP object will be available anywhere on your JS files, it contains information about your website like language (if multilang), current slug, etc.
-
-## Logging
-
-Set WP_DEBUG_LOG = true to start logging, check the /logs directory in your wordpress root.
-
-```php
-//as a part of your wp-config.php
-define('WP_DEBUG_LOG', true);
-```
-
-## Options
-
-When intanciating a new WPASController you can to specify the following options:
-
-| Option                            | Default   | Description  |
-|-----------------------------------|-----------|----------------------------------------------------------|
-| namespace (required)              | ''        | PHP namespace in which all your controller classes are goign to be declared |
-| data (optional)                   | []        | any data you want to append to the data array |
-| mainscript-requierments (optinal) | ''        | ['script1',] |
-| namespace (optional)              | ''        | PHP namespace in which all your controller classes are goign to be declared |
-
-## Javascript Global Variable Injection
-
-If you want, you can inject more properties into the WPAS_APP object by using the "wpas_js_global_variables" filter, like this:
-
-```php
-		add_filter('wpas_fill_content', function($name, $data){
-			$data['lang'] = 'english';
-			return $data;
-		},10,2);
-```
-
-Here I'm specifying that may language is english
 
 ### Author
 
