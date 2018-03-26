@@ -68,40 +68,39 @@ class WPASAPIController{
     public function load(){
 
         WPASLogger::info('WPAS_APIController: INIT');
-        
         foreach($this->routes as $path => $params){
             
             $controller = $params['callback'];
-            $method = $params['method'];
+            $httpMethod = $params['method'];
             
             $controllerObject = $this->getController($controller);
             $className = $controllerObject;
+            $methodName = '';
             if(is_array($className))
             {
                 $methodName = $controllerObject[1]; //The view
                 $className = $controllerObject[0]; //The type of the view
-            }
+            }else throw new Error('You need to specify the controller and class method that will handle the API request');
 
                 //echo $this->options['application_name'].'/v'.$this->options['version'].$path; die();
-            WPASLogger::info('WPAS_APIController: match found for [ method => '.$method.', controller => '.$controller.' ] calling: '.$methodName);
+            WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
             $controller = $this->options['namespace'].$className;
             
             if(isset($this->closures[$controller])) register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
-                    'methods' => $method,
+                    'methods' => $httpMethod,
                     'callback' => $this->closures[$controller]['closure'],
                   ) );
             else{
+                if($methodName!='getAllEvents') print_r($controller.':'.$methodName);
                 $v = new $controller();
                 if(is_callable([$v,$methodName])){
                     register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
-                        'methods' => $method,
+                        'methods' => $httpMethod,
                         'callback' => [$v,$methodName],
                       ) );
                 }
                 else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
             }
-            return;
-            
         }
     }
     
