@@ -47,8 +47,7 @@ require ABSPATH."vendor/autoload.php";
 
 Instanciate the PostTypeManager:
 ```php
-    use \WPAS\Types\PostTypesManager;
-    $typeManager = new PostTypesManager([
+    $typeManager = new \WPAS\Types\PostTypesManager([
         'namespace' => '\php\Types\\'
     ]);
 ```
@@ -60,10 +59,8 @@ Define your type in functions.php
 Define your type class in the types folder:
 ```php
     namespace php\Types;
-    
-    use WPAS\Types\BasePostType;
-    
-    class AnyPostTypeModelClass extends BasePostType{
+
+    class AnyPostTypeModelClass extends \WPAS\Types\BasePostType{
     
         //any method here
     }
@@ -83,6 +80,7 @@ Our Course.php controller class will look like this:
 
 ```php
 namespace php\Controllers;
+
 class Course{
     
     public function renderCourse(){
