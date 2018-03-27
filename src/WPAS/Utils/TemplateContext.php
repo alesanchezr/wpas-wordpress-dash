@@ -76,6 +76,7 @@ class TemplateContext{
         {
             case 'default': 
                 if(is_page($view) || is_singular($view)) return $pieces;
+                if($view=='home') return $pieces;
             break;
             case 'page':
                 if($view=='all'){
