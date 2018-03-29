@@ -82,7 +82,6 @@ class WPASAPIController{
                 $className = $controllerObject[0]; //The type of the view
             }else throw new Error('You need to specify the controller and class method that will handle the API request');
 
-                //echo $this->options['application_name'].'/v'.$this->options['version'].$path; die();
             WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
             $controller = $this->options['namespace'].$className;
             
@@ -91,7 +90,6 @@ class WPASAPIController{
                     'callback' => $this->closures[$controller]['closure'],
                   ) );
             else{
-                if($methodName!='getAllEvents') print_r($controller.':'.$methodName);
                 $v = new $controller();
                 if(is_callable([$v,$methodName])){
                     register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
