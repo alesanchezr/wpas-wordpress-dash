@@ -30,3 +30,21 @@ You can also add new enpoints using controller classes instead of callbacks
     $api->put(['path' => '/event', 'controller' => 'APIController:createEvents']);
     $api->delete(['path' => '/event', 'controller' => 'APIController:deleteEvents']);
 ```
+
+## Aditional options
+
+These are all the possible settings and their respective default state
+```
+    $api = new \WPAS\Controller\WPASAPIController([
+    
+        //REQUIRED
+        'application_name' => '4gwebsite', // your API name (you can have several API's in the same wp installation)
+        
+        //REQUIRED
+        'version' => 1, // version number for the api
+    
+        'allow-origin' => '*' // optional: the domain you want to accept requests from, all by default
+        
+        'allow-methods' => 'GET' // optiona: HTTP methods to allow separated by coma: GET,POST,PUT,DELETE
+    ]);
+```

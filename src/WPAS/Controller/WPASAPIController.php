@@ -20,7 +20,9 @@ class WPASAPIController{
         $this->options = [
             'namespace' => '',
             'application_name' => null,
-            'version' => null
+            'version' => null,
+            'allow-origin' => '*',
+            'allow-methods' => 'GET'
             ];
         $this->loadOptions($options);
         
@@ -32,8 +34,8 @@ class WPASAPIController{
         	remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
         	add_filter( 'rest_pre_serve_request', function( $value ) {
         		//$origin = get_http_origin();
-        		header( 'Access-Control-Allow-Origin: *');
-        		header( 'Access-Control-Allow-Methods: GET' );
+        		header( 'Access-Control-Allow-Origin: '.$this->options['allow-origin']);
+        		header( 'Access-Control-Allow-Methods: '.$this->options['allow-methods']);
         
         		return $value;
         		
