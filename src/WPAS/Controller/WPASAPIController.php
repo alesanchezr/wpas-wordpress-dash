@@ -24,6 +24,25 @@ class WPASAPIController{
             ];
         $this->loadOptions($options);
         
+        /**
+         * Only allow GET requests
+         */
+        add_action( 'rest_api_init', function() {
+            
+        	remove_filter( 'rest_pre_serve_request', 'rest_send_cors_headers' );
+        	add_filter( 'rest_pre_serve_request', function( $value ) {
+        		$origin = get_http_origin();
+        		if ( $origin ) {
+        			header( 'Access-Control-Allow-Origin: ' . esc_url_raw( $origin ) );
+        		}
+        		header( 'Access-Control-Allow-Origin: ' . esc_url_raw( site_url() ) );
+        		header( 'Access-Control-Allow-Methods: GET' );
+        
+        		return $value;
+        		
+        	});
+        }, 15 );
+        
         add_action( 'rest_api_init', [$this,'load']);
     }
     
