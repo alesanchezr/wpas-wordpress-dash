@@ -48,6 +48,7 @@ class PostTypesManager{
         $pt = null;
         if(is_array($options)) $pt = new $classPath($type, $options);
         else $pt = new $classPath($type);
+        $classPath::setType($type);
         return $pt;
     }
     
