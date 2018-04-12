@@ -40,10 +40,12 @@ class WPASController{
         else
         {
             add_action('template_redirect', [$this,'load']);
-            add_action ( 'wp_head', function(){ ?>
+            add_action ( 'wp_head', function(){ 
+                $context = $this->loadGlobalContext();
+            ?>
                 <script type="text/javascript">
                     /* <![CDATA[ */
-                    var WPAS_APP = <?php echo json_encode($this->loadGlobalContext(), JSON_PRETTY_PRINT); ?>
+                    var WPAS_APP = <?php echo json_encode($context, JSON_PRETTY_PRINT); ?>
                     /* ]]> */
                 </script>
                 <?php
