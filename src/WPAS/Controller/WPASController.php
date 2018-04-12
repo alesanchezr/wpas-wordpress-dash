@@ -200,7 +200,7 @@ class WPASController{
         }
         
         $this->context = $this->loadGlobalContext();
-        print_r($this->context); die();
+        //print_r($this->context); die();
     }
     
     private function loadGlobalContext(){
