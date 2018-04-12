@@ -41,6 +41,7 @@ class WPASController{
         else
         {
             add_action('template_redirect', [$this,'load']);
+            add_action('get_header', [$this,'loadGlobalContext']);
             add_action ( 'wp_head', function(){ 
             ?>
                 <script type="text/javascript">
@@ -199,11 +200,9 @@ class WPASController{
             
         }
         
-        $this->context = $this->loadGlobalContext();
-        //print_r($this->context); die();
     }
     
-    private function loadGlobalContext(){
+    public function loadGlobalContext(){
         $context = TemplateContext::getContext();
 	    $data = [];
 	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
@@ -222,7 +221,7 @@ class WPASController{
         
         $oldData = self::get_context();
         $newData = self::set_context(array_merge($oldData, $data));
-        return $newData;
+        $this->context = $newData;
     }
     
     private function getCurrentURL(){
