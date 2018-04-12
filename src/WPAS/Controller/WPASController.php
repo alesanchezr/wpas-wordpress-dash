@@ -49,7 +49,7 @@ class WPASController{
                     /* ]]> */
                 </script>
                 <?php
-            },2 );
+            },1 );
         }
     
     }
