@@ -200,10 +200,10 @@ class WPASController{
         }
         
         $this->context = $this->loadGlobalContext();
+        print_r($this->context); die();
     }
     
     private function loadGlobalContext(){
-
         $context = TemplateContext::getContext();
 	    $data = [];
 	    if($this->options['data'] && is_array($this->options['data'])) $data = $this->options['data'];
