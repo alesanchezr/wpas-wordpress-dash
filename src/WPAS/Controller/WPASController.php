@@ -17,6 +17,7 @@ class WPASController{
     private $routes = [];
     private $options = [];
     private $closures = [];
+    private $context = null;
     private static $transientsDuration = 18000;// 30min * 60sec = 1800 sec.
     
     public static $ajaxController = null;
@@ -41,15 +42,14 @@ class WPASController{
         {
             add_action('template_redirect', [$this,'load']);
             add_action ( 'wp_head', function(){ 
-                $context = $this->loadGlobalContext();
             ?>
                 <script type="text/javascript">
                     /* <![CDATA[ */
-                    var WPAS_APP = <?php echo json_encode($context, JSON_PRETTY_PRINT); ?>
+                    var WPAS_APP = <?php echo json_encode($this->context, JSON_PRETTY_PRINT); ?>
                     /* ]]> */
                 </script>
                 <?php
-            },0);
+            },2);
         }
     
     }
@@ -198,6 +198,8 @@ class WPASController{
             } 
             
         }
+        
+        $this->context = $this->loadGlobalContext();
     }
     
     private function loadGlobalContext(){
