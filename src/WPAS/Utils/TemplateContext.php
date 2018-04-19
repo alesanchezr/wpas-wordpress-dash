@@ -83,7 +83,6 @@ class TemplateContext{
                     if(is_page()) return $pieces;
                 } 
                 else if(is_page($view)){
-                    print_r($pieces); die();
                     return $pieces;
                 } 
             break;
