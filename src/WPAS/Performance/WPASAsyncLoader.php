@@ -43,12 +43,13 @@ class WPASAsyncLoader{
             }
             if(empty($options['manifest-url'])) $options['manifest-url'] = 'manifest.json';
             
+            if(!isset($options['public-url'])) $options['public-url'] = '';
             $manifestURL = $options['public-url'].$options['manifest-url'];
             if (!HelperHTTP::url_exists($manifestURL)) throw new WPASException('Unable to load manifest from: '.$manifestURL);
             
             $jsonManifiest = json_decode($this->get_file_content($manifestURL));
             if($jsonManifiest) self::$manifest = $this->loadManifiest($jsonManifiest);
-            else throw new WPASException('Invalid Manifiest Syntax');
+            else throw new WPASException('Invalid Manifiest Syntax from manifest: '.$manifestURL);
             
             if(!empty($options['minify-html']) && $options['minify-html']===true){
                 if(!defined('UGLIFY_HTML')) ob_start([$this,"minifyHTML"]);

@@ -14,8 +14,14 @@ class PostTypesManager{
         
         $this->options = [
             'namespace' => '\\',
+            'rest-support' => true,
             ];
         $this->loadOptions($options);
+        
+        /**
+        * Add REST API support to an already registered post type.
+        */
+        if($this->options['rest-support']) add_action( 'init', [$this,'addRestSupport'], 25 );
     }
     
     private function loadOptions($options){
@@ -50,6 +56,20 @@ class PostTypesManager{
         else $pt = new $classPath($type);
         $classPath::setType($type);
         return $pt;
+    }
+    
+    function addRestSupport() {
+        global $wp_post_types;
+        
+        //be sure to set this to the name of your post type!
+        foreach($this->customTypes as $type){
+            if( isset( $wp_post_types[ $type->name ] ) ) {
+                $wp_post_types[$type->name]->show_in_rest = true;
+                $wp_post_types[$type->name]->rest_base = $type->name;
+                $wp_post_types[$type->name]->rest_controller_class = 'WP_REST_Posts_Controller';
+            }
+        }
+    
     }
     
 }
