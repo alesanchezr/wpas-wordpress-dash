@@ -84,79 +84,82 @@ class WPASAPIController{
         }
         
         //TO-DO: Implement multiple Methos per Endpoint
-        $this->routes[$path] = ['callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability] ;
-        /*if( !array_key_exists($path, $this->routes) ){
-            $this->routes[$path] = [ ['callback' => $closureIndex , 'method' => $method] ];
+        //$this->routes[$path] = ['callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability];
+        if( !array_key_exists($path, $this->routes) ){
+            //$this->routes[$path] = [ ['callback' => $closureIndex , 'method' => $method] ];
+            $this->routes[$path] = [ ['callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability] ];
             
         }else{
-            array_push($this->routes[$path], array('callback' => $closureIndex , 'method' => $method ));
-        }*/
+            array_push($this->routes[$path], array('callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability));
+        }
     }
     
     public function load(){
 
         WPASLogger::info('WPAS_APIController: INIT');
-        foreach($this->routes as $path => $params){
+        foreach($this->routes as $path => $listOfMethods){
+            foreach($listOfMethods as $params){
             
-            $controller = $params['callback'];
-            $httpMethod = $params['method'];
-            $capability = $params['permission_callback'];
-            
-            $controllerObject = $this->getController($controller);
-            $className = $controllerObject;
-            $methodName = '';
-            if(is_array($className))
-            {
-                $methodName = $controllerObject[1]; //The view
-                $className = $controllerObject[0]; //The type of the view
-            }else throw new Error('You need to specify the controller and class method that will handle the API request');
-
-            WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
-            $controller = $this->options['namespace'].$className;
-            
-            //OLD
-            /*if(isset($this->closures[$controller])) register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
-                    'methods' => $httpMethod,
-                    'callback' => $this->closures[$controller]['closure']  
-                  ) );
-            else{
-                $v = new $controller();
-                if(is_callable([$v,$methodName])){
-                    register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
+                $controller = $params['callback'];
+                $httpMethod = $params['method'];
+                $capability = $params['permission_callback'];
+                
+                $controllerObject = $this->getController($controller);
+                $className = $controllerObject;
+                $methodName = '';
+                if(is_array($className))
+                {
+                    $methodName = $controllerObject[1]; //The view
+                    $className = $controllerObject[0]; //The type of the view
+                }else throw new Error('You need to specify the controller and class method that will handle the API request');
+    
+                WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
+                $controller = $this->options['namespace'].$className;
+                
+                //OLD
+                /*if(isset($this->closures[$controller])) register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
                         'methods' => $httpMethod,
-                        'callback' => [$v,$methodName]
+                        'callback' => $this->closures[$controller]['closure']  
                       ) );
-                }
-                else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
-            }*/
-            
-            $initArray = array('methods' => $httpMethod);
-            
-            if(isset($this->closures[$controller])){
+                else{
+                    $v = new $controller();
+                    if(is_callable([$v,$methodName])){
+                        register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
+                            'methods' => $httpMethod,
+                            'callback' => [$v,$methodName]
+                          ) );
+                    }
+                    else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
+                }*/
                 
-                $initArray['callback'] = $this->closures[$controller]['closure'];
+                $initArray = array('methods' => $httpMethod);
                 
-            }else{
-                
-                $v = new $controller();
-                
-                if(is_callable([$v,$methodName])){
+                if(isset($this->closures[$controller])){
                     
-                    $initArray['callback'] = [$v,$methodName];
+                    $initArray['callback'] = $this->closures[$controller]['closure'];
                     
+                }else{
+                    
+                    $v = new $controller();
+                    
+                    if(is_callable([$v,$methodName])){
+                        
+                        $initArray['callback'] = [$v,$methodName];
+                        
+                    }
+                    else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
                 }
-                else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
+                
+                if( !empty($capability) ){
+                    $initArray['permission_callback'] = function ($request) use ($capability) {
+                                    //if (current_user_can('edit_others_posts'))
+                                    if (current_user_can($capability))
+                                    return true;
+                             };
+                }
+                
+                register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, $initArray);
             }
-            
-            if( !empty($capability) ){
-                $initArray['permission_callback'] = function ($request) use ($capability) {
-                                //if (current_user_can('edit_others_posts'))
-                                if (current_user_can($capability))
-                                return true;
-                         };
-            }
-            
-            register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, $initArray);
         }
     }
     
