@@ -110,9 +110,13 @@ class WPASAsyncLoader{
     }
     
     public static function filter_manifest($url){
+
+        if (filter_var($url, FILTER_VALIDATE_URL)){
+            return $url;
+        }
         
         if(!empty(self::$manifest)){
-            if(empty(self::$manifest[$url])) throw new WPASException('The index '.$url.' was not found in the manifest.json');
+            if(empty(self::$manifest[$url])) throw new WPASException('The stylesheet '.$url.' was not found in the manifest.json');
             else return self::$manifest[$url];
         }
         else return $url;
