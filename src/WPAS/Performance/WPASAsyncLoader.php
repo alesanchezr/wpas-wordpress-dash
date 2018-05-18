@@ -41,6 +41,10 @@ class WPASAsyncLoader{
             if(!empty($options['public-url'])){
                 self::$publicUrl = $options['public-url'];
             }
+            
+            if(!empty($options['version'])){
+                self::$cacheVersion = $options['version'];
+            }
             if(empty($options['manifest-url'])) $options['manifest-url'] = 'manifest.json';
             
             if(!isset($options['public-url'])) $options['public-url'] = '';
@@ -224,7 +228,7 @@ class WPASAsyncLoader{
                 } 
                 foreach(self::$scripts[$currentPage['type']][$key] as $script) 
                 {
-                    wp_enqueue_script( $script, self::filter_manifest($script), $oldScript, '1.0.0', true );
+                    wp_enqueue_script( $script, self::filter_manifest($script), $oldScript, self::$cacheVersion, true );
                     $oldScript = [$script];
                 }
             }

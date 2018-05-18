@@ -5,14 +5,19 @@ namespace WPAS\GravityForm;
 use WPAS\GravityForm\Fields\BaseGravityFormField;
 use WPAS\Controller\WPASController;
 use GFForms;
+use WPAS\Utils\WPASException;
 
 class WPASGravityForm{
     
     private $fields = [];
     
     function __construct($settings){
-
-        GFForms::include_addon_framework();
+        
+        if(!class_exists('GFForms')){
+            if ( !is_admin() ) throw new WPASException('Please install the gravity forms plugin in your admin');    
+            else return true;
+        }
+        else GFForms::include_addon_framework();
         
         if(!empty($settings['submit-button-class'])) $customSubmit = new CustomSubmitButton();
         
@@ -25,6 +30,9 @@ class WPASGravityForm{
             add_action( "gform_register_init_scripts", [$this,"display_form_scripts"] );
         }
         
+        //label visibility settings
+        add_filter( 'gform_enable_field_label_visibility_settings', '__return_true' );
+        
         add_filter("gform_field_value", [$this,'populate_gform_fields'],3,10);
         
         if(!empty($settings['bootstrap4-styles'])) add_filter( 'gform_field_container', [$this,'add_bootstrap_container_class'], 10, 6 );
@@ -33,7 +41,7 @@ class WPASGravityForm{
     function add_bootstrap_container_class( $field_container, $field, $form, $css_class, $style, $field_content ) {
       $id = $field->id;
       $field_id = is_admin() || empty( $form ) ? "field_{$id}" : 'field_' . $form['id'] . "_$id";
-      return '<li id="' . $field_id . '" class="' . $css_class . ' form-group">{FIELD_CONTENT}</li>';
+      return '<li id="' . $field_id . '" class="' . $css_class . ' bootstrap-form">{FIELD_CONTENT}</li>';
     }
     
     private function classFactory($type){

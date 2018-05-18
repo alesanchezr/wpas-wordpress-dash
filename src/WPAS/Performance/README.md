@@ -1,6 +1,36 @@
 
 # Performance
 
+Here is how you can use the Performance Module to load your styles:
+
+```php
+$asyncLoader = new WPASAsyncLoader([
+    //manifest for webpack
+    'manifest-url' => $publicPath.'/public/manifest.json',
+    'version' => 1,
+    'debug' => true,
+    'force-jquery' => true, //leaves jquery on the website
+    'minify-html' => false,
+    'styles' => [
+        "category" => [ 
+          "all" => 'main.css'
+        ],
+        "page" => [ 
+          "all" => 'main.css',
+          'gallery'=> ['main.css', 'https://cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.10/css/lightgallery.min.css'],
+        ],
+        "custom-post" => [ 
+          'venue'=> ['main.css', 'https://cdnjs.cloudflare.com/ajax/libs/lightgallery/1.6.10/css/lightgallery.min.css'],
+          "all" => 'main.css', 
+        ]
+    ],
+    'scripts' => [
+            "page" => [ "all" => ['main.js'] ],
+            "custom-post" => [ "all" => ['main.js'] ]
+        ]
+    ]);
+```
+
 1. Load SVG inline cached SVG icons
 
 ```php

@@ -41,6 +41,8 @@ class PostTypesManager{
         
         $classPath = $this->options['namespace'].$typeDetails['class'];
         
+        $options['rewrite'] = ['slug' => $typeDetails['type']];
+        
         $newType = $this->createInstance($typeDetails['type'], $classPath, $options);
         $this->customTypes[] = $newType;
         return $newType;
