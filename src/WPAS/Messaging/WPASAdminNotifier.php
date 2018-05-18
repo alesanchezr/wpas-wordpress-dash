@@ -2,6 +2,8 @@
 
 namespace WPAS\Messaging;
 
+require_once('global_functions.php');
+
 use WPAS\Utils\WPASException;
 
 class WPASAdminNotifier{
@@ -12,8 +14,21 @@ class WPASAdminNotifier{
     const INFO = 'info';
     public static $messages = [];
     
-    static function addTransientMessage($type, $message)
-    {
+    static function error($msg){
+        self::addTransientMessage(self::ERROR, $msg);
+    }
+    static function warning($msg){
+        self::addTransientMessage(self::WARNING, $msg);
+    }
+    static function info($msg){
+        self::addTransientMessage(self::INFO, $msg);
+    }
+    static function success($msg){
+        self::addTransientMessage(self::SUCCESS, $msg);
+    }
+    
+    static function addTransientMessage($type, $message){
+        
         if(!in_array($type,[self::ERROR,self::INFO,self::SUCCESS,self::WARNING]))
             throw new WPASException('Invalid WPASNotifier message type');
             
