@@ -6,6 +6,7 @@ use WPAS\GravityForm\Fields\BaseGravityFormField;
 use WPAS\Controller\WPASController;
 use GFForms;
 use WPAS\Utils\WPASException;
+use WPAS\Messaging\WPASAdminNotifier;
 
 class WPASGravityForm{
     
@@ -15,7 +16,10 @@ class WPASGravityForm{
         
         if(!class_exists('GFForms')){
             if ( !is_admin() ) throw new WPASException('Please install the gravity forms plugin in your admin');    
-            else return true;
+            else{
+                WPASAdminNotifier::error('Please install the Gravity Forms plugin or remove the call to WPASGravityForm from the functions.php');
+                return true;
+            } 
         }
         else GFForms::include_addon_framework();
         
