@@ -15,7 +15,7 @@ class WPASGravityForm{
     function __construct($settings){
         
         if(!class_exists('GFForms')){
-            if ( !is_admin() ) throw new WPASException('Please install the gravity forms plugin in your admin');    
+            if ( !is_admin() && !WP_CLI ) throw new WPASException('Please install the gravity forms plugin in your admin');    
             else{
                 WPASAdminNotifier::error('Please install the Gravity Forms plugin or remove the call to WPASGravityForm from the functions.php');
                 return true;
