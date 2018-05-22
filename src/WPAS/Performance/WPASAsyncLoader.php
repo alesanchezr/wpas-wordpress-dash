@@ -26,9 +26,10 @@ class WPASAsyncLoader{
     
     public function __construct($options=[]){
 
+        
         WPASLogger::getLogger('wpas_asyncloader');
         
-        self::$insideAdmin = is_admin();
+        self::$insideAdmin = (is_admin() || (defined('WP_CLI') && WP_CLI));
         if(!self::$insideAdmin){
             
             if(!empty($options['leave-scripts-alone'])) self::$leaveScriptsAlone = $options['leave-scripts-alone'];
