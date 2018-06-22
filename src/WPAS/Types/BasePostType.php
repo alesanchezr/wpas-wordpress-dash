@@ -31,7 +31,7 @@ class BasePostType extends PostType{
     public static function all($args=[], $hook=null){
         $realPostType = get_called_class();
         $realPostType = strtolower(preg_replace( "%[A-Za-z]\w+\\\%", '',$realPostType));
-        
+
         if(empty(self::$postType)) throw new WPASException('Please register() the class '.get_called_class().' at least one time before using it');
         $args = array_merge([
             'post_type' => $realPostType

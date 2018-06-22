@@ -54,9 +54,15 @@ class TemplateContext{
             if(!empty($wp_query->query['pagename'])) self::$current = ['type'=>'page', 'slug' => $wp_query->query['pagename']];
             else if(!empty($wp_query->name)) self::$current = ['type'=>'page', 'slug' => $wp_query->name];
         }
-        //print_r(self::$current); die();
         self::$current['template'] = str_replace('.php','',get_page_template_slug());
+        if(defined('WP_DEBUG_CONTEXT') && WP_DEBUG_CONTEXT) self::printContext(self::$current);
         return self::$current;
+    }
+    
+    private static function printContext($context){
+        echo '<div style="background: black; color: white; font-size: 10px;"><ul>';
+        foreach($context as $key => $val) echo "<li style='display: inline;'><span style='color: orange; text-transform: capitalize;'>$key</span>: <span style='color: #FBFBFB;'>$val</span> </li>";
+        echo '</div></ul>';
     }
     
     public static function matchesViewAndType($view){

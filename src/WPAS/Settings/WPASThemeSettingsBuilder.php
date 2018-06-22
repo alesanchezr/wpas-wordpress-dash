@@ -23,6 +23,7 @@ class WPASThemeSettingsBuilder{
 	private $badge;
 	private $settingsID;
 	private $settingFields;
+	private $htmlFields;
 	private $toolbar;
 	private $notice;
 
@@ -39,6 +40,7 @@ class WPASThemeSettingsBuilder{
 		 */
 		$this->tabs = (array_key_exists('tabs', $args)) ? $args['tabs'] : array();
 		$this->theme = wp_get_theme();
+		$this->htmlFields = [];
 		$this->general = (array_key_exists('general', $args)) ? $args['general'] : array();
 		$this->badge = (array_key_exists('badge', $args)) ? $args['badge'] : '';
 		$this->settingsID = (array_key_exists('settingsID', $args)) ? $this->keyEntity($args['settingsID']).'-settings-group' : '';
@@ -54,6 +56,7 @@ class WPASThemeSettingsBuilder{
 				foreach ($data["tabFields"] as $key => $value){
 					//if($value['type']=='text_array') add_action( "update_option_".$value['name'], array($this,'update_array_option'),10,2);
 					if($value['type']!=='array') array_push($this->settingFields, $value['name']);
+					if($value['type']=='textarea_html') array_push($this->htmlFields, $value['name']);
 					
 				}
 			}
@@ -263,6 +266,13 @@ class WPASThemeSettingsBuilder{
 				}
 				break;
 			// Build text
+			case 'textarea_html':
+				echo '<textarea class="'.$html_class.'" name="'.$array['name'].'">'.$this->wpts_option($array['name']).'</textarea>';
+				if (array_key_exists('tooltip', $array)) {
+					echo '<div class="wpts-tooltip">!<span class="wpts-tooltiptext wpts-tooltip-right">'.$array['tooltip'].'</span></div>';
+				}
+				break;
+			// Build text
 			case 'text_array':
 				$meta = get_option($array['name']);
 
@@ -445,14 +455,17 @@ class WPASThemeSettingsBuilder{
 		if(!defined('WPAS_ABS_PATH')) define('WPAS_ABS_PATH', get_home_path().'vendor/alesanchezr/wpas-wordpress-dash');
 		if(!defined('WPAS_DOMAIN')) define('WPAS_DOMAIN', 'default');
 		
+		
     	foreach ( $this->settingFields as $value ) {
-    		register_setting( $this->settingsID, $value, array($this, 'sanitize') );
+    		if(in_array($value, $this->htmlFields)) register_setting( $this->settingsID, $value );
+    		else register_setting( $this->settingsID, $value, array($this, 'sanitize') );
     	}
 	}
 	/*
 	 * @ Sanitize inputs
 	 */
 	public function sanitize($input){
+		//print_r($input);echo 's';die();
 		if(is_array($input))
 		{
 			foreach($input as $key => $value) $input[$key] = sanitize_text_field($value);
@@ -519,7 +532,7 @@ class WPASThemeSettingsBuilder{
 	}
 	
 	public static function setThemeOption($optKey, $optValue){
-	    
+	    //print_r($optKey);echo 's';die();
 		//echo self::THEME_OPTIONS_KEY.$optKey ' - ' $optValue; die();
 		return update_option(self::THEME_OPTIONS_KEY.$optKey, $optValue);
 	}
