@@ -83,14 +83,24 @@ class WPASAPIController{
             $capability = $args['capability'];
         }
         
-        //TO-DO: Implement multiple Methos per Endpoint
-        //$this->routes[$path] = ['callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability];
+        $endpointArgs = '';
+        if(isset( $args['args'] ) ){
+            $endpointArgs = $args['args'];
+        }
+        
         if( !array_key_exists($path, $this->routes) ){
-            //$this->routes[$path] = [ ['callback' => $closureIndex , 'method' => $method] ];
-            $this->routes[$path] = [ ['callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability] ];
+            
+            $this->routes[$path] = [ 
+                    [
+                        'callback' => $closureIndex , 
+                        'method' => $method, 
+                        'permission_callback' => $capability,
+                        'args' => $endpointArgs
+                    ]
+                ];
             
         }else{
-            array_push($this->routes[$path], array('callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability));
+            array_push($this->routes[$path], array('callback' => $closureIndex , 'method' => $method, 'permission_callback' => $capability, 'args' => $endpointArgs));
         }
     }
     
@@ -103,6 +113,7 @@ class WPASAPIController{
                 $controller = $params['callback'];
                 $httpMethod = $params['method'];
                 $capability = $params['permission_callback'];
+                $args = $params['args'];
                 
                 $controllerObject = $this->getController($controller);
                 $className = $controllerObject;
@@ -115,22 +126,6 @@ class WPASAPIController{
     
                 WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
                 $controller = $this->options['namespace'].$className;
-                
-                //OLD
-                /*if(isset($this->closures[$controller])) register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
-                        'methods' => $httpMethod,
-                        'callback' => $this->closures[$controller]['closure']  
-                      ) );
-                else{
-                    $v = new $controller();
-                    if(is_callable([$v,$methodName])){
-                        register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, array(
-                            'methods' => $httpMethod,
-                            'callback' => [$v,$methodName]
-                          ) );
-                    }
-                    else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
-                }*/
                 
                 $initArray = array('methods' => $httpMethod);
                 
@@ -152,10 +147,13 @@ class WPASAPIController{
                 
                 if( !empty($capability) ){
                     $initArray['permission_callback'] = function ($request) use ($capability) {
-                                    //if (current_user_can('edit_others_posts'))
                                     if (current_user_can($capability))
                                     return true;
                              };
+                }
+                
+                if( !empty($args) ){
+                    $initArray['args'] = $args;
                 }
                 
                 register_rest_route( $this->options['application_name'].'/v'.$this->options['version'], $path, $initArray);
