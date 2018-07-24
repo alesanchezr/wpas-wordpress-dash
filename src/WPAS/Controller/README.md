@@ -25,6 +25,34 @@ $api->get(['path' => '/events', 'controller' => function(){
         return  TF\Types\CoursePostType::all()->posts;
     }]);
 ```
+You can set args to document the usage of the endpoint. [Link](https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-custom-endpoints/#arguments)
+
+You can set the user's capability for the endpoint. (Uses JWT wordpress [Plugin](https://wordpress.org/plugins/jwt-authentication-for-wp-rest-api/) 
+```
+
+$api->put(
+    [ 
+        'path' => '/events/rsvp/(?P<id>[\d]+)', 
+        'controller' => 'EventController:registerRSVP', 
+        'capability' => 'activate_plugins',
+        'args' => array(
+            'answer' => array(
+                'required' => true,
+                'validate_callback' => function($param, $request, $key){
+                    return $param === 'yes' || $param === 'no';
+                }
+            ),
+            'username' => array(
+                'required' => true,
+                'validate_callback' => function($param, $request, $key){
+                    return is_string($param);
+                }
+            )
+            
+        )
+    ]
+);
+```
 
 Here is more information on how to create API enpoints using WordPress Dash
 [https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/API.md](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/API.md)
