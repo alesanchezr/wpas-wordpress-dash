@@ -4,11 +4,6 @@ You can use command line to generate the any code you need for the Controllers a
 
 ## Instalation
 
-First install the library via composer
-```
-$ composer require alesanchezr/wpas-wordpress-dash:dev-master
-```
-
 Now, to begin using the CLI, please run this command after downloaded the library with composer
 
 ```sh
