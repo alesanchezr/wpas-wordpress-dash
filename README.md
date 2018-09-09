@@ -3,7 +3,7 @@
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
-1. MVC Pattern implementation (Model-View-Controller) in WordPress.
+1. MVC Pattern implementation (Model-View-Controller) in WordPress..
 2. Create API's with WordPress very fast.
 
 ## Installation
