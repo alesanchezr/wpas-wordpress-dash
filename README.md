@@ -3,12 +3,12 @@
 
 Are you a WordPress developer? Then you are probably struggling with the same stuff that I use too truggle every day.
 
-1. MVC Pattern implementation (Model-View-Controller) in WordPress..
+1. MVC Pattern implementation (Model-View-Controller) in WordPress.
 2. Create API's with WordPress very fast.
 
 ## Installation
 
-1. Require the library with composer
+1. Require the library with composer (NOTE: You must be in your Wordpress directory before running this command. The installer will attempt to create your theme in ./wp-content/<your_theme_directory_name> )
 ```sh
 $ composer require alesanchezr/wpas-wordpress-dash:dev-master
 ```
