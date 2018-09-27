@@ -24,7 +24,14 @@ You can add as many Custom Post Types as you want, but you also need to add the 
     
     class CoursePostType extends BasePostType{
     
-        //any method here
+        //you can override the initilize function  
+        function initialize(){
+            //whatever you code here, gets runned at the same time as functions.php
+        }
+        
+        
+        
+        //any other model methods here
     }
 ```
 
