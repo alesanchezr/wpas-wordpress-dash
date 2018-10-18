@@ -41,6 +41,19 @@ if ( !defined('ABSPATH') ) define('ABSPATH', dirname(__FILE__) . '/');
 require ABSPATH."vendor/autoload.php";
 ```
 
+If you are working with Flywheel hosting (and/or Flywheel Local), you will need to require the path in the following way:
+
+```
+if(!strpos($_SERVER['SERVER_NAME'], '.local')){
+  require 'vendor/autoload.php';
+}else{
+  require ABSPATH . 'vendor/autoload.php';
+}
+```
+
+This is due to the fact that their folder structure separates your content and plugins from the root Wordpress install after you push your site live.
+
+
 ## Working with the MVC Pattern
 
 ### The Models (Custom Types)
