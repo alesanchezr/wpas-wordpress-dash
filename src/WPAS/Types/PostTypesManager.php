@@ -50,7 +50,7 @@ class PostTypesManager{
     
     private function createInstance($type, $classPath, $options){
         
-        if(!class_exists($classPath)) throw new WPASException('Your class '.$classPath.' cour not be found, check your autoload?');
+        if(!class_exists($classPath)) throw new WPASException('Your class '.$classPath.' could not be found. You may want to check your autoload in functions.php.');
         if(!is_subclass_of($classPath, 'WPAS\Types\BasePostType')) throw new WPASException('Your class '.$classPath.' has to inherit from \WPAS\Types\BasePostType');
         
         $pt = null;
