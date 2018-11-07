@@ -2,7 +2,7 @@
     "name": "alesanchezr/wpas-wordpress-dash",
     "type": "library",
     "description": "WordPress development on steroids",
-    "keywords": ["ajax","controller","roles", "capabilities"],
+    "keywords": ["ajax","controller","roles", "capabilities", "wordpress", "wordpress-mvc", "wordpress-library"],
     "authors": [
         {
             "name": "Alejandro Sanchez",
