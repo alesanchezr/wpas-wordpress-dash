@@ -43,7 +43,7 @@ require ABSPATH."vendor/autoload.php";
 
 If you are working with Flywheel hosting (and/or Flywheel Local), you will need to require the path in the following way:
 
-```
+```php
 if(!strpos($_SERVER['SERVER_NAME'], '.local')){
   require 'vendor/autoload.php';
 }else{
@@ -106,6 +106,14 @@ class Course{
 }
 ```
 [Continue reading about implementing MVC on your wordpress](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller)
+
+## Debugging
+
+On you wo-config.php file add the following constant:
+```php
+define('WP_DEBUG_CONTEXT', true);
+```
+It will add a top bar with the current template being used.
 
 ## Upcomming Experimental Features (Not Stable)
 
