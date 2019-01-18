@@ -25,8 +25,9 @@ class BS4Navwalker extends \Walker_Nav_Menu{
      * @param array  $args   An array of arguments. @see wp_nav_menu()
      */
     public function start_lvl( &$output, $depth = 0, $args = array() ) {
+        //debug($args);
         $indent = str_repeat("\t", $depth);
-        $output .= "\n$indent<div class=\"dropdown-menu\">\n";
+        $output .= "\n$indent<div class=\"dropdown-menu\"  aria-labelledby=\"".$args->container_id."\">\n";
     }
 
     /**
@@ -119,7 +120,7 @@ class BS4Navwalker extends \Walker_Nav_Menu{
         $atts['title']  = ! empty( $item->attr_title ) ? $item->attr_title : '';
         $atts['target'] = ! empty( $item->target )     ? $item->target     : '';
         $atts['rel']    = ! empty( $item->xfn )        ? $item->xfn        : '';
-        $atts['href']   = ! empty( $item->url )        ? $item->url        : '';
+        $atts['id']   = ! empty( $args->container_id )        ? $args->container_id        : 'navbar-dropdown-'.$depth;
 
         // New
         if ($depth === 0) {
@@ -129,6 +130,11 @@ class BS4Navwalker extends \Walker_Nav_Menu{
         if ($depth === 0 && in_array('menu-item-has-children', $classes)) {
             $atts['class']       .= ' dropdown-toggle';
             $atts['data-toggle']  = 'dropdown';
+            $atts['aria-haspopup']  = 'true';
+            $atts['aria-expanded']  = 'false';
+        }
+        else{
+            $atts['href']   = ! empty( $item->url )        ? $item->url        : '';
         }
 
         if ($depth > 0) {
