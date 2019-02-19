@@ -17,7 +17,7 @@ class WPASController{
     private $routes = [];
     private $options = [];
     private $closures = [];
-    private $context = null;
+    private static $context = null;
     private static $transientsDuration = 18000;// 30min * 60sec = 1800 sec.
     
     public static $ajaxController = null;
@@ -41,12 +41,12 @@ class WPASController{
         else
         {
             add_action('template_redirect', [$this,'load']);
-            add_action('get_header', [$this,'loadGlobalContext']);
+            //add_action('get_header', [$this,'loadGlobalContext']);
             add_action ( 'wp_head', function(){ 
             ?>
                 <script type="text/javascript">
                     /* <![CDATA[ */
-                    var WPAS_APP = <?php echo json_encode($this->context, JSON_PRETTY_PRINT); ?>
+                    var WPAS_APP = <?php echo json_encode(self::$context, JSON_PRETTY_PRINT); ?>
                     /* ]]> */
                 </script>
                 <?php
@@ -171,6 +171,7 @@ class WPASController{
     public function load(){
 
         WPASLogger::info('WPASController: INIT');
+        $this->loadGlobalContext();
         $this->loadAjaxController();
         foreach($this->routes as $view => $controller){
             
@@ -218,10 +219,8 @@ class WPASController{
 		}
 			
         $data = apply_filters( 'wpas_fill_content', $data );
-        
         $oldData = self::get_context();
-        $newData = self::set_context(array_merge($oldData, $data));
-        $this->context = $newData;
+        self::$context = self::set_context(array_merge($oldData, $data));
     }
     
     private function getCurrentURL(){
@@ -308,17 +307,15 @@ class WPASController{
     private static function set_context($data){
         
         $cookie_value = json_encode($data);
-
         setcookie('wpas_app', $cookie_value, time() + self::$transientsDuration, COOKIEPATH, COOKIE_DOMAIN);
-        
         return $data;
     }
     
     public static function get_context(){
+        if(self::$context) return self::$context;
         if(!isset($_COOKIE['wpas_app'])) return [];
         else{
             $WPAS_APP = (array) json_decode(stripslashes($_COOKIE['wpas_app']));
-
             if($WPAS_APP) return $WPAS_APP;
             else throw new WPASException('Imposible to retreive encode cookie: '.$_COOKIE['wpas_app']);
         }
