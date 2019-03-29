@@ -59,7 +59,7 @@ class WPASLanguages{
 	}
 	
 	public static function getSlug($key){
-		
+		if(is_admin()) return $key;
 		if(!self::$currentTranslations) throw new WPASException("Could not find the languages file");
 		$slugs = self::$currentTranslations['slugs'];
 
