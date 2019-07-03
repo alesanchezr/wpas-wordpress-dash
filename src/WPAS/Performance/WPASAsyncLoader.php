@@ -9,7 +9,7 @@ use WPAS\Utils\HelperHTTP;
 require_once('global_functions.php');
 
 class WPASAsyncLoader{
-    
+
     private static $manifest = [];
     private static $criticalStyles = [];
     private static $scripts = [];
@@ -17,45 +17,53 @@ class WPASAsyncLoader{
     private static $forceJquery = false;
     private static $loadedStyleCount = 0;
     private static $publicUrl = '';
+    private static $internalUrl = '';
     private static $ready = false;
     private static $cacheVersion = '1';
     private static $leaveScriptsAlone = null;
     private static $insideAdmin = false;
-    
+
     private static $criticalStylesQueue = [];
-    
+
     public function __construct($options=[]){
 
-        
         WPASLogger::getLogger('wpas_asyncloader');
-        
+
         self::$insideAdmin = (is_admin() || (defined('WP_CLI') && WP_CLI));
         if(!self::$insideAdmin){
-            
+
             if(!empty($options['leave-scripts-alone'])) self::$leaveScriptsAlone = $options['leave-scripts-alone'];
-            
+
             if(empty($options['debug'])) $options['debug'] = false;
             if(!empty($options['force-jquery'])){
                 self::$forceJquery = true;
-            } 
-            
+            }
+
             if(!empty($options['public-url'])){
                 self::$publicUrl = $options['public-url'];
             }
-            
+
+            if(!empty($options['internal-url'])){
+                self::$internalUrl = $options['internal-url'];
+            }else self::$internalUrl = get_template_directory() . '/public/';
+
             if(!empty($options['version'])){
                 self::$cacheVersion = $options['version'];
             }
             if(empty($options['manifest-url'])) $options['manifest-url'] = 'manifest.json';
             
-            if(!isset($options['public-url'])) $options['public-url'] = '';
-            $manifestURL = $options['public-url'].$options['manifest-url'];
-            if (!HelperHTTP::url_exists($manifestURL)) throw new WPASException('Unable to load manifest from: '.$manifestURL);
-            
+            if(file_exists(self::$internalUrl.$options['manifest-url'])){
+                $manifestURL = self::$internalUrl.$options['manifest-url'];
+            }
+            else{
+                if(!isset($options['public-url'])) $options['public-url'] = '';
+                $manifestURL = $options['public-url'].$options['manifest-url'];
+                if (!HelperHTTP::url_exists($manifestURL)) throw new WPASException('Unable to load manifest from: '.$manifestURL);
+            }
+
             $jsonManifiest = json_decode($this->get_file_content($manifestURL));
             if($jsonManifiest) self::$manifest = $this->loadManifiest($jsonManifiest);
             else throw new WPASException('Invalid Manifiest Syntax from manifest: '.$manifestURL);
-            
             if(!empty($options['minify-html']) && $options['minify-html']===true){
                 if(!defined('UGLIFY_HTML')) ob_start([$this,"minifyHTML"]);
                 else if(UGLIFY_HTML) ob_start([$this,"minifyHTML"]);
@@ -64,15 +72,17 @@ class WPASAsyncLoader{
                 self::$criticalStyles = $options['critical-styles'];
                 add_action('wpas_print_critical_styles',[$this,'printCriticalStyles']);
             }
-            
+
             if(!empty($options['scripts'])) self::$scripts = $options['scripts'];
             if(!empty($options['styles'])) self::$styles = $options['styles'];
-            
+
             //If debug=true I load the styles the old way
             if($options['debug']){
+                
                 add_action('wp_enqueue_scripts',[$this,'loadDebuggableScriptsAndStyles']);
             }
             else{
+                
                 //If we are not debugging I load the styles the new way
                 add_action('wpas_print_footer_scripts',[$this,'loadScriptsAsync']);
                 add_action('wpas_print_styles',[$this,'loadStylesAsync'], 20);
@@ -81,52 +91,55 @@ class WPASAsyncLoader{
             add_action( "wp", [$this,"is_ready"] );
             add_action( 'init', [$this,'remove_previous_styles'], 20 );
         }
-        
-    }            
-    
+
+    }
+
     public function remove_previous_styles(){
         if (!self::$insideAdmin && !self::is_login_page() && !self::$leaveScriptsAlone) {
             if(!self::$forceJquery)
             {
                 wp_deregister_script('jquery');
-                wp_register_script('jquery', '', '', '', true);     
+                wp_register_script('jquery', '', '', '', true);
             }
-            wp_deregister_script( 'wp-embed' ); 
+            wp_deregister_script( 'wp-embed' );
        }
     }
-    
+
     public function is_ready(){
         self::$ready = true;
     }
-    
+
     public function is_login_page(){
         if ( $GLOBALS['pagenow'] === 'wp-login.php' ) {
             // We're on the login page!
             return true;
         }
     }
-    
+
     private function loadManifiest($manifiestObj){
         $manifest = [];
         foreach($manifiestObj as $resource => $path)
-            $manifest[$resource] = self::$publicUrl.$path;
-            
+            $manifest[$resource] = [
+                'public' => self::$publicUrl.$path,
+                'internal' => self::$internalUrl.$path
+            ];
+
         return $manifest;
     }
-    
-    public static function filter_manifest($url){
+
+    public static function filter_manifest($url, $scope='public'){
 
         if (filter_var($url, FILTER_VALIDATE_URL)){
             return $url;
         }
-        
+
         if(!empty(self::$manifest)){
             if(empty(self::$manifest[$url])) throw new WPASException('The stylesheet '.$url.' was not found in the manifest.json');
-            else return self::$manifest[$url];
+            else return self::$manifest[$url][$scope];
         }
         else return $url;
     }
-    
+
     /**
      * Minifies the HTML outuput only
      **/
@@ -140,20 +153,20 @@ class WPASAsyncLoader{
                 '/(\s)+/s',         // shorten multiple whitespace sequences
                 '/<!--(.|\s)*?-->/' // Remove HTML comments
             );
-        
+
             $replace = array(
                 '>',
                 '<',
                 '\\1',
                 ''
             );
-        
+
             $buffer = preg_replace($search, $replace, $buffer);
         }
-    
+
         return $buffer;
     }
-    
+
     public static function print_style_tag($path){
         if(self::$loadedStyleCount == 0){
             echo '<script>
@@ -164,32 +177,31 @@ class WPASAsyncLoader{
     		</script>';
         }
         self::$loadedStyleCount++;
-        echo "<!-- printing style ".self::$loadedStyleCount." --> \n".'<link rel="preload" href="'.self::filter_manifest($path).'?v=1" as="style" onload="this.rel=\'stylesheet\'">';
+        echo "<!-- printing style ".self::$loadedStyleCount." --> \n".'<link rel="preload" href="'.self::filter_manifest($path,'public').'?v=1" as="style" onload="this.rel=\'stylesheet\'">';
     }
-    
+
     public static function print_styles($path){
         $cssContent = self::get_file_content($path);
         echo '<style type="text/css">'.$cssContent.'</style>';
     }
-    
+
     public static function printCriticalStyles(){
-        
         if(!empty(self::$criticalStyles))
         {
             $currentPage = TemplateContext::getContext(self::$ready);
             WPASLogger::info('WPASAsyncLoader: Current Context [ type => '.$currentPage['type'].', slug => '.$currentPage['slug'].' ]');
-            
+
             $key = self::getMatch($currentPage, self::$criticalStyles);
-            if($key) self::print_styles(self::filter_manifest(self::$criticalStyles[$currentPage['type']][$key]));
+            if($key) self::print_styles(self::filter_manifest(self::$criticalStyles[$currentPage['type']][$key], 'internal'));
         }
     }
-    
+
     /**
      * Loads the non-critical styles asynchronously (how google likes it)
      * the critical styles are printed inline in another function adn from a separate files
      **/
     public static function loadStylesAsync($param){
-        
+
         if(!empty(self::$styles))
         {
             $currentPage = TemplateContext::getContext(self::$ready);
@@ -197,7 +209,7 @@ class WPASAsyncLoader{
             if($key) self::print_style_tag(self::$styles[$currentPage['type']][$key]);
         }
     }
-    
+
     /**
      * Loads the scripts asynchronously (how google likes it)
      **/
@@ -212,12 +224,13 @@ class WPASAsyncLoader{
             }
         }
     }
-    
+
     /**
      * Loads the scripts the old traditional way
      **/
     public static function loadDebuggableScriptsAndStyles(){
         $currentPage = TemplateContext::getContext(self::$ready);
+        
         if(!empty(self::$scripts))
         {
             $key = self::getMatch($currentPage, self::$scripts);
@@ -226,109 +239,109 @@ class WPASAsyncLoader{
                 $oldScript = [];
                 if(self::$forceJquery){
                     wp_enqueue_script('jquery' , get_template_directory_uri().'/wp-includes/js/jquery/jquery.js?ver=1.12.4' , []);
-                } 
-                foreach(self::$scripts[$currentPage['type']][$key] as $script) 
+                }
+                foreach(self::$scripts[$currentPage['type']][$key] as $script)
                 {
-                    wp_enqueue_script( $script, self::filter_manifest($script), $oldScript, self::$cacheVersion, true );
+                    wp_enqueue_script( $script, self::filter_manifest($script,'public'), $oldScript, self::$cacheVersion, true );
                     $oldScript = [$script];
                 }
             }
-            
+
             if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
         }
-        
         if(!empty(self::$styles))
         {
             $key = self::getMatch($currentPage, self::$styles);
             if($key){
                 $styles = [];
                 $oldStyle = [];
-                if(is_array(self::$styles[$currentPage['type']][$key])) foreach(self::$styles[$currentPage['type']][$key] as $style) 
+                if(is_array(self::$styles[$currentPage['type']][$key])) foreach(self::$styles[$currentPage['type']][$key] as $style)
                 {
-                    wp_enqueue_style( $style, self::filter_manifest($style), $oldStyle, '1.0.0' );
+                    wp_enqueue_style( $style, self::filter_manifest($style, 'public'), $oldStyle, '1.0.0' );
                     $oldStyle = [$style];
                 }
                 else{
                     $style = self::$styles[$currentPage['type']][$key];
-                    wp_enqueue_style( $style, self::filter_manifest($style), null, '1.0.0' );
-                } 
-                    
+                    wp_enqueue_style( $style, self::filter_manifest($style, 'public'), null, '1.0.0' );
+                }
+
             }
         }
     }
-    
+
     private static function printScripts($scriptsToPrint){
-        if(count($scriptsToPrint)>2) throw new Exception('There can only be 2 scripts to load'); 
+        if(count($scriptsToPrint)>2) throw new Exception('There can only be 2 scripts to load');
         $scripts = [];
-        foreach($scriptsToPrint as $script) $scripts[] = self::filter_manifest($script);
         
+        foreach($scriptsToPrint as $script) $scripts[] = self::filter_manifest($script, 'internal');
         echo '<script type="text/javascript">
                 var WPASScriptManger=function(){var e={};return e.single=function(e,n){var t=new XMLHttpRequest;t.open("GET",e),t.addEventListener("load",function(){var e=document.createElement("script");e.type="text/javascript",e.text=t.responseText,document.getElementsByTagName("head")[0].appendChild(e),n&&n()}),t.send()},e.load=function(n){e.single(n[0],function(){void 0!==n[1]&&e.single(n[1])})},e}();
                 window.onload=function(){WPASScriptManger.load('.json_encode($scripts,JSON_UNESCAPED_SLASHES).');};
             </script>';
-        
+
         if (class_exists( 'GFCommon' )) self::loadGravityFormsOnFooter();
     }
-    
+
     private static function get_file_content($file){
-        $file_headers = @get_headers($file);
-        if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') throw new WPASException("File ".$file." not found");
-        else{
-            $content = @file_get_contents($file);
-            if(empty($content)) throw new WPASException("File ".$file." content was imposible to get or it's empty");
-            else return $content;
-        };
+        if(!file_exists($file)){
+            $file_headers = @get_headers($file);
+            if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') throw new WPASException("File ".$file." not found");
+        }
+
+        $content = @file_get_contents($file);
+        if(empty($content)) throw new WPASException("File ".$file." content was imposible to get or it's empty");
+        else return $content;
     }
-    
+
     private static function getMatch($currentPage, $hierarchy){
         if(!empty($hierarchy[$currentPage['type']])){
-            
+
             if(!empty($hierarchy[$currentPage['type']][$currentPage['slug']])) return $currentPage['slug'];
             else
             {
                 $templateSlug = 'template:'.get_page_template_slug();
                 if(!empty($hierarchy[$currentPage['type']][$templateSlug])){
                     return $templateSlug;
-                } 
+                }
                 else if(!empty($hierarchy[$currentPage['type']]['all'])) return 'all';
-            } 
-            
+            }
+
         }else return null;
     }
-    
+
     private static function loadGravityFormsOnFooter(){
-        
+
         // GF method: http://www.gravityhelp.com/documentation/gravity-forms/extending-gravity-forms/hooks/filters/gform_init_scripts_footer/
         add_filter( 'gform_init_scripts_footer', '__return_true' );
-    
+
         // solution to move remaining JS from https://bjornjohansen.no/load-gravity-forms-js-in-footer
 
-        
+
         //deregister all scripts
         add_action("gform_enqueue_scripts", function (){
                      //Change this conditional to target whatever page or form you need.
-		    if(!is_admin()) { 
-                        
-                //These are the CSS stylesheets 
-                wp_deregister_style("gforms_formsmain_css"); 	
+		    if(!is_admin()) {
+
+                //These are the CSS stylesheets
+                wp_deregister_style("gforms_formsmain_css");
                 wp_deregister_style("gforms_reset_css");
                 wp_deregister_style("gforms_ready_class_css");
                 wp_deregister_style("gforms_browsers_css");
-                
-                //These are the scripts. 
-                //NOTE: Gravity forms automatically includes only the scripts it needs, so be careful here. 
+
+                //These are the scripts.
+                //NOTE: Gravity forms automatically includes only the scripts it needs, so be careful here.
                 $base_url = \GFCommon::get_base_url();
                 $min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
-                
+
         		wp_deregister_script('gform_chosen');
         		wp_register_script( 'gform_chosen', $base_url . '/js/chosen.jquery.min.js', array( 'jquery' ), self::$cacheVersion, true );
-        		
+
         		wp_deregister_script('gform_conditional_logic');
         		wp_register_script( 'gform_conditional_logic', $base_url . "/js/conditional_logic{$min}.js", array( 'jquery', 'gform_gravityforms' ), self::$cacheVersion, true );
-        		
+
         		wp_deregister_script('gform_datepicker_init');
         		wp_register_script( 'gform_datepicker_init', $base_url . "/js/datepicker{$min}.js", array( 'jquery', 'jquery-ui-datepicker', 'gform_gravityforms' ), self::$cacheVersion, true );
-        		
+
         		wp_deregister_script('gform_floatmenu');
         		wp_register_script( 'gform_floatmenu', $base_url . "/js/floatmenu_init{$min}.js", array( 'jquery' ), self::$cacheVersion, true );
 
@@ -367,12 +380,12 @@ class WPASAsyncLoader{
 
         		wp_deregister_script('gform_shortcode_ui');
         		wp_register_script( 'gform_shortcode_ui', $base_url . "/js/shortcode-ui{$min}.js", array( 'jquery', 'wp-backbone' ), self::$cacheVersion, true );
-                
+
 		    }
-		    
+
         }, 99);
-        
+
 
     }
-    
+
 }
