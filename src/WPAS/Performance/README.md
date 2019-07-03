@@ -8,7 +8,7 @@ Here is how you can use the Performance Module to load your styles:
 ```php
 $asyncLoader = new WPASAsyncLoader([
     'internal-url' => get_stylesheet_directory().'/public/',
-    'public-url' => $publicPath.'/public/',
+    'public-url' => get_stylesheet_directory_uri().'/public/',
     'version' => 1,
     'debug' => true,
     'force-jquery' => true, //leaves jquery on the website
