@@ -1,12 +1,14 @@
 
 # Performance
 
+This library WPASAsyncLoader requires you to use a manifest.json on your webpack configuration.
+
 Here is how you can use the Performance Module to load your styles:
 
 ```php
 $asyncLoader = new WPASAsyncLoader([
-    //manifest for webpack
-    'manifest-url' => $publicPath.'/public/manifest.json',
+    'internal-url' => get_stylesheet_directory().'/public/',
+    'public-url' => $publicPath.'/public/',
     'version' => 1,
     'debug' => true,
     'force-jquery' => true, //leaves jquery on the website
