@@ -55,14 +55,16 @@ class BasePostType extends PostType{
         return $result;
     }
     
-    public static function get($args){
+    public static function get($args=null){
         $realPostType = get_called_class();
         $realPostType = strtolower(preg_replace( "%[A-Za-z]\w+\\\%", '',$realPostType));
         
         if(empty(self::$postType)) throw new WPASException('Please instanciate the class '.get_called_class().' at least one time before using it');
+        if(empty($args)) throw new WPASException('Please specify an ID to fetch');
+
         if(is_array($args)) $args = array_merge($args,[ 'post_type' => $realPostType ]);
-        else if(is_numeric($args)) $args = [ 'post_type' => $realPostType, 'ID' => $args ];
-        
+        else if(is_numeric($args)) return get_post($args);
+            
         $query = new WP_Query($args);
         if($query->posts && $query->post_count >=1){
             return $query->posts[0];
