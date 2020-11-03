@@ -122,7 +122,7 @@ class WPASAPIController{
                 {
                     $methodName = $controllerObject[1]; //The view
                     $className = $controllerObject[0]; //The type of the view
-                }else throw new Error('You need to specify the controller and class method that will handle the API request');
+                }else throw new WPASException('You need to specify the controller and class method that will handle the API request');
     
                 WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
                 $controller = $this->options['namespace'].$className;
