@@ -72,7 +72,7 @@ class WPASAPIController{
         $closureIndex = $controller;
         if($this->is_closure($controller)){
 
-            $closureIndex = spl_object_hash($controller);
+            $closureIndex = "closure_".spl_object_hash($controller);
             $this->closures[$closureIndex] = [
                 'action' => $args['controller'],
                 'closure' => $controller
@@ -122,10 +122,9 @@ class WPASAPIController{
                 {
                     $methodName = $controllerObject[1]; //The view
                     $className = $controllerObject[0]; //The type of the view
-                }else throw new WPASException('You need to specify the controller and class method that will handle the API request');
-    
-                WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
-                $controller = $this->options['namespace'].$className;
+                }else{
+                    if(strpos($controller, 'closure_') === false) throw new WPASException('You need to specify the controller and class method that will handle the API request');
+                } 
                 
                 $initArray = array('methods' => $httpMethod);
                 
@@ -134,6 +133,9 @@ class WPASAPIController{
                     $initArray['callback'] = $this->closures[$controller]['closure'];
                     
                 }else{
+
+                    WPASLogger::info('WPAS_APIController: match found for '.$httpMethod.': '.$path.', controller => '.$controller.' ] calling: '.$methodName);
+                    $controller = $this->options['namespace'].$className;
                     
                     $v = new $controller();
                     
