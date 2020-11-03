@@ -140,18 +140,21 @@ class WPASAPIController{
                     $v = new $controller();
                     
                     if(is_callable([$v,$methodName])){
-                        
                         $initArray['callback'] = [$v,$methodName];
-                        
                     }
                     else throw new WPASException('Method "'.$methodName.'" for api path "'.$path.'" does not exists in '.$className);
                 }
                 
-                if( !empty($capability) ){
+                if( !empty($capability)){
                     $initArray['permission_callback'] = function ($request) use ($capability) {
-                                    if (current_user_can($capability))
-                                    return true;
-                             };
+                        if (current_user_can($capability))
+                        return true;
+                    };
+                }
+                else{
+                    $initArray['permission_callback'] = function ($request) use ($capability) {
+                        return true;
+                    };
                 }
                 
                 if( !empty($args) ){
