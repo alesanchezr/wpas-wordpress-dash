@@ -55,6 +55,12 @@ class BasePostType extends PostType{
         return $result;
     }
     
+    public static function delete($id=null){
+        if(empty($id)) throw new WPASException('Please specify an ID to delete');
+        $result = wp_delete_post($id);
+        return !empty($result);
+    }
+    
     public static function get($args=null){
         $realPostType = get_called_class();
         $realPostType = strtolower(preg_replace( "%[A-Za-z]\w+\\\%", '',$realPostType));
