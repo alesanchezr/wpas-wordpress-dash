@@ -55,7 +55,7 @@ $api->put(
 ```
 
 Here is more information on how to create API enpoints using WordPress Dash
-[https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/API.md](https://github.com/alesanchezr/wpas-wordpress-dash/tree/master/src/WPAS/Controller/blob/master/API.md)
+[https://github.com/alesanchezr/wpas-wordpress-dash/blob/master/src/WPAS/Controller/API.md](https://github.com/alesanchezr/wpas-wordpress-dash/blob/master/src/WPAS/Controller/API.md)
 
 If you want variables in your path, [read here](https://developer.wordpress.org/rest-api/extending-the-rest-api/routes-and-endpoints/#path-variables).
 
